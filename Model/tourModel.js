@@ -141,11 +141,13 @@ TourSchema.pre(/^find/, function (next) {
   });
   next();
 });
-TourSchema.post(/^find/, function (docs, next) {
-  const timeTook = Date.now() - this.date;
-  console.log('time took', timeTook);
-  next();
-});
+
+// TourSchema.post(/^find/, function (docs, next) {
+//   const timeTook = Date.now() - this.date;
+//   console.log('time took', timeTook);
+//   next();
+// });
+
 // //embedd tour guieds in tour docu
 // TourSchema.pre('save', async function (next) {
 //   const guidesArray = this.guides.map(async (id) => await User.findById(id));

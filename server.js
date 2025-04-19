@@ -1,12 +1,9 @@
-import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
-import path from 'path';
+import mongoose from 'mongoose';
+dotenv.config({ path: './config.env' });
 import app from './app.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
+import Stripe from 'stripe';
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 process.on('uncaughtException', (err) => {
   console.log('unhandeled exception caught! \n Error 💥');
   console.log(err);
@@ -14,9 +11,8 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
-dotenv.config({ path: `${__dirname}/config.env` });
-
 mongoose
+  // .connect(process.env.HOSTED_DATABASE)
   .connect(process.env.LOCAL_DATABASE)
   .then(() => console.log('Local DataBase connected!!'));
 

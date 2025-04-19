@@ -6,7 +6,7 @@ const stripe = new Stripe(
 );
 export const createSession = async (tourId) => {
   const session = await axios(
-    `http://127.0.0.1:3000/api/v1/bookings/checkout/${tourId}`,
+    `/api/v1/bookings/checkout/${tourId}`,
   );
   window.location.assign(session.data.session.url);
 };

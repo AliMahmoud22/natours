@@ -8,6 +8,7 @@ import mongoSanitize from 'express-mongo-sanitize';
 import xss from 'xss-clean';
 import hpp from 'hpp';
 import cookieParser from 'cookie-parser';
+import compression from 'compression';
 
 import globalErrorHandler from './controller/globalErrorHandle.js';
 import AppError from './utils/AppError.js';
@@ -96,6 +97,8 @@ app.use(
 );
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(compression());
 
 app.use('/', viewRoute);
 app.use('/api/v1/users', userRoute);

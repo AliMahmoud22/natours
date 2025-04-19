@@ -1,14 +1,9 @@
-import AppError from './../utils/AppError.js';
-import catchAsync from './../utils/catchAsync.js';
+import AppError from '../utils/AppError.js';
+import catchAsync from '../utils/catchAsync.js';
 import Tour from '../Model/tourModel.js';
 import Booking from '../Model/bookingModel.js';
-import Stripe from 'stripe';
-import * as factoryHandler from '../controller/factoryHandler.js';
-
-const stripe = new Stripe(
-  'sk_test_51RDlLM4JEYuvsGHlQI82MFawYptK2rzML0fwVOBu1jrmwN9bZNBcHaJHADhHeD92ePqJrT8JWirOa2DR9o7lHUux00w4mE5sLi',
-);
-
+import * as factoryHandler from './factoryHandler.js';
+import {stripe} from '../server.js';
 export const checkout = catchAsync(async (req, res, next) => {
   const tour = await Tour.findById(req.params.tourId);
   if (!tour) return next(new AppError('there is no Tour with this ID!', 404));
@@ -46,7 +41,6 @@ export const createBookingCheckout = catchAsync(async (req, res, next) => {
   const { tour, user, price } = req.query;
 
   if (!tour && !user && !price) return next();
-  console.log(tour, user, price);
   await Booking.create({ tour, user, price });
   res.redirect(req.originalUrl.split('?')[0]);
 });

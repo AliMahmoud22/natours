@@ -5,10 +5,10 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
-    "start": " nodemon ./server.js",
+    "start": "nodemon ./server.js",
     "start:prod": "SET NODE_ENV=production&nodemon ./server.js",
     "watch:js": "parcel watch ./public/js/index.js --dist-dir ./public/js/bundle",
-    "build:js": "parcel watch ./public/js/index.js --dist-dir ./public/js/bundle"
+    "build:js": "parcel build ./public/js/index.js --dist-dir ./public/js/bundle"
   },
   "author": "ali",
   "license": "ISC",
@@ -18,8 +18,9 @@
   "dependencies": {
     "axios": "^1.8.4",
     "bcryptjs": "^2.4.3",
+    "compression": "^1.8.0",
     "cookie-parser": "^1.4.7",
-    "dotenv": "^16.4.7",
+    "dotenv": "^16.5.0",
     "express": "^4.21.2",
     "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^7.5.0",
