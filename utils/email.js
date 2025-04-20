@@ -35,7 +35,6 @@ export default class Email {
     });
   }
   async send(templete, subject) {
-    // const html = pug.renderFile(`${__dirname}/../views/email/${templete}.pug`, {
     const html = pug.renderFile(`${__dirname}/../views/email/${templete}.pug`, {
       firstName: this.firstName,
       url: this.url,

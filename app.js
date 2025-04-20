@@ -25,7 +25,6 @@ const app = express();
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 
-// Global Middleware
 const scriptSrcUrls = [
   'https://api.tiles.mapbox.com/',
   'https://api.mapbox.com/',
@@ -46,6 +45,7 @@ const connectSrcUrls = [
   'https://checkout.stripe.com',
 ];
 const fontSrcUrls = ['fonts.googleapis.com', 'fonts.gstatic.com'];
+// Global Middleware
 app.use(
   helmet.contentSecurityPolicy({
     directives: {
