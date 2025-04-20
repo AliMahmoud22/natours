@@ -3,6 +3,7 @@ import catchAsync from '../utils/catchAsync.js';
 import Tour from '../Model/tourModel.js';
 import Booking from '../Model/bookingModel.js';
 import * as factoryHandler from './factoryHandler.js';
+
 import {stripe} from '../server.js';
 export const checkout = catchAsync(async (req, res, next) => {
   const tour = await Tour.findById(req.params.tourId);

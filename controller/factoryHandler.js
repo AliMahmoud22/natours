@@ -68,7 +68,6 @@ export const getAll = (Model) =>
       .sort()
       .paginate();
     const allDocuments = await apiFeaturesobj.query;
-    // const allDocuments = await apiFeaturesobj.query.explain();
     res.status(200).json({
       status: 'success',
       results: allDocuments.length,

@@ -73,6 +73,5 @@ if (checkoutBtn) {
     e.preventDefault();
     checkoutBtn.textContent = 'processing...';
     createSession(checkoutBtn.dataset.tourId);
-   // checkoutBtn.textContent = 'Book tour now!';
   });
 }
