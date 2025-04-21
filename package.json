@@ -6,7 +6,6 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "build": "node server.js",
     "watch:js": "parcel watch ./public/js/index.js --dist-dir ./public/js/bundle",
     "build:js": "parcel build ./public/js/index.js --dist-dir ./public/js/bundle"
   },
