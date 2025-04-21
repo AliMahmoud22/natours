@@ -28,6 +28,18 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
+mongoose
+  .connect(
+    process.env.HOSTED_DATABASE.replace(
+      '<db_password>',
+      process.env.DB_PASSWORD,
+    ),
+  )
+  // .connect(process.env.LOCAL_DATABASE)
+  .then(() => console.log('DataBase connected!!'))
+  .catch((err) => {
+    console.log(err);
+  });
 
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
@@ -106,14 +118,7 @@ app.use(
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(compression());
 
-app.use(
-  '/',
-  (next) => {
-    console.log('here in app.js');
-    next();
-  },
-  viewRoute,
-);
+app.use('/', viewRoute);
 app.use('/api/v1/users', userRoute);
 app.use('/api/v1/tours', tourRoute);
 app.use('/api/v1/reviews', reviewRoute);
@@ -131,16 +136,6 @@ process.on('uncaughtException', (err) => {
   console.log('shutting down...');
   process.exit(1);
 });
-
-mongoose
-  .connect(
-    process.env.HOSTED_DATABASE.replace(
-      '<db_password>',
-      process.env.DB_PASSWORD,
-    ),
-  )
-  // .connect(process.env.LOCAL_DATABASE)
-  .then(() => console.log('DataBase connected!!'));
 
 const port = process.env.PORT || 4000;
 const server = app.listen(port, () => {
