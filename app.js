@@ -117,12 +117,8 @@ app.use(
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(compression());
-
-<<<<<<< HEAD
 app.use('/', viewRoute);
-=======
 app.use( '/', viewRoute);
->>>>>>> dd0332ec56eb2eb1326982e2e51b6c4a4413a67c
 app.use('/api/v1/users', userRoute);
 app.use('/api/v1/tours', tourRoute);
 app.use('/api/v1/reviews', reviewRoute);
