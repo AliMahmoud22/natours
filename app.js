@@ -28,7 +28,7 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
-await mongoose
+ mongoose
   .connect(
     process.env.HOSTED_DATABASE.replace(
       '<db_password>',

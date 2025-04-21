@@ -5,12 +5,13 @@ import AppError from '../utils/AppError.js';
 import catchAsync from '../utils/catchAsync.js';
 
 export const getOverview = catchAsync(async (req, res) => {
-  console.log('here in getoverview');
-  const tours = await Tour.find();
-  res.status(200).render('overview', {
-    title: 'All Tours',
-    tours,
-  });
+  // console.log('here in getoverview');
+  // const tours = await Tour.find();
+  // res.status(200).render('overview', {
+  //   title: 'All Tours',
+  //   tours,
+  // });
+  res.send('hello from overview');
 });
 
 export const getTour = catchAsync(async (req, res, next) => {
