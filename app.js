@@ -14,7 +14,6 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import Stripe from 'stripe';
 
-
 import globalErrorHandler from './controller/globalErrorHandle.js';
 import AppError from './utils/AppError.js';
 import userRoute from './Routes/userRoutes.js';
@@ -107,7 +106,14 @@ app.use(
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(compression());
 
-app.use('/', viewRoute);
+app.use(
+  '/',
+  (next) => {
+    console.log('here in app.js');
+    next();
+  },
+  viewRoute,
+);
 app.use('/api/v1/users', userRoute);
 app.use('/api/v1/tours', tourRoute);
 app.use('/api/v1/reviews', reviewRoute);
@@ -118,7 +124,6 @@ app.all('*', (req, res, next) => {
 });
 
 app.use(globalErrorHandler);
-
 
 process.on('uncaughtException', (err) => {
   console.log('unhandeled exception caught! \n Error 💥');
@@ -149,7 +154,4 @@ process.on('unhandledRejection', (err) => {
   });
 });
 
-
-
 export default app;
-
