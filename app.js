@@ -10,6 +10,11 @@ import hpp from 'hpp';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
 
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import Stripe from 'stripe';
+
+
 import globalErrorHandler from './controller/globalErrorHandle.js';
 import AppError from './utils/AppError.js';
 import userRoute from './Routes/userRoutes.js';
@@ -17,6 +22,9 @@ import tourRoute from './Routes/tourRoutes.js';
 import reviewRoute from './Routes/reviewRoutes.js';
 import viewRoute from './Routes/viewRoutes.js';
 import bookingRoute from './Routes/bookingRoutes.js';
+
+dotenv.config({ path: './config.env' });
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -111,4 +119,37 @@ app.all('*', (req, res, next) => {
 
 app.use(globalErrorHandler);
 
+
+process.on('uncaughtException', (err) => {
+  console.log('unhandeled exception caught! \n Error 💥');
+  console.log(err);
+  console.log('shutting down...');
+  process.exit(1);
+});
+
+mongoose
+  .connect(
+    process.env.HOSTED_DATABASE.replace(
+      '<db_password>',
+      process.env.DB_PASSWORD,
+    ),
+  )
+  // .connect(process.env.LOCAL_DATABASE)
+  .then(() => console.log('DataBase connected!!'));
+
+const port = process.env.PORT || 4000;
+const server = app.listen(port, () => {
+  console.log(`listening on port ${port}.........`);
+});
+process.on('unhandledRejection', (err) => {
+  console.log(err.name, '\n', err.message);
+  console.log('shutting down...');
+  server.close(() => {
+    process.exit(1);
+  });
+});
+
+
+
 export default app;
+
