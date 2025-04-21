@@ -2,9 +2,9 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import Stripe from 'stripe';
 import app from './app.js';
-
+import viewRoute from './Routes/viewRoutes.js';
 dotenv.config({ path: './config.env' });
-
+app.use('/', viewRoute);
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 process.on('uncaughtException', (err) => {
