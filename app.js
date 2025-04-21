@@ -106,14 +106,7 @@ app.use(
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(compression());
 
-app.use(
-  '/',
-  (next) => {
-    console.log('here in app.js');
-    next();
-  },
-  viewRoute,
-);
+app.use( '/', viewRoute);
 app.use('/api/v1/users', userRoute);
 app.use('/api/v1/tours', tourRoute);
 app.use('/api/v1/reviews', reviewRoute);
