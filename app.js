@@ -32,7 +32,7 @@ const app = express();
 //to allow other sites to use APIs
 app.use(cors());
 app.options('*', cors());
-app.enable('trust proxy ');
+app.enable('trust proxy');
 // app.enable({ trustproxy: false });
 
 mongoose
@@ -96,7 +96,7 @@ const limiter = ratelimit({
 });
 app.use('/api', limiter);
 
-app.get(
+app.post(
   '/webhook-checkout',
   express.raw({ type: 'application/json' }),
   bookingController.webhookCheckout,
