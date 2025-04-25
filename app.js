@@ -36,13 +36,13 @@ app.enable('trust proxy ');
 // app.enable({ trustproxy: false });
 
 mongoose
-  .connect(process.env.LOCAL_DATABASE)
-  // .connect(
-  //   process.env.HOSTED_DATABASE.replace(
-  //     '<db_password>',
-  //     process.env.DB_PASSWORD,
-  //   ),
-  // )
+  // .connect(process.env.LOCAL_DATABASE)
+  .connect(
+    process.env.HOSTED_DATABASE.replace(
+      '<db_password>',
+      process.env.DB_PASSWORD,
+    ),
+  )
   .then(() => console.log('DataBase connected!!'));
 
 app.set('view engine', 'pug');
