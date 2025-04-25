@@ -10,8 +10,9 @@ import hpp from 'hpp';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import cors from 'cors';
-import dotenv from 'dotenv';
-import mongoose from 'mongoose';
+// import dotenv from 'dotenv';
+// import mongoose from 'mongoose';
+// dotenv.config({ path: './config.env' });
 import Stripe from 'stripe';
 
 import globalErrorHandler from './controller/globalErrorHandle.js';
@@ -22,8 +23,7 @@ import reviewRoute from './Routes/reviewRoutes.js';
 import viewRoute from './Routes/viewRoutes.js';
 import bookingRoute from './Routes/bookingRoutes.js';
 import * as bookingController from './controller/bookingController.js';
-
-dotenv.config({ path: './config.env' });
+import './dataBaseConnection.js';
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const __filename = fileURLToPath(import.meta.url);
@@ -35,15 +35,15 @@ app.options('*', cors());
 app.enable('trust proxy');
 // app.enable({ trustproxy: false });
 
-mongoose
-  // .connect(process.env.LOCAL_DATABASE)
-  .connect(
-    process.env.HOSTED_DATABASE.replace(
-      '<db_password>',
-      process.env.DB_PASSWORD,
-    ),
-  )
-  .then(() => console.log('DataBase connected!!'));
+// mongoose
+//   // .connect(process.env.LOCAL_DATABASE)
+//   .connect(
+//     process.env.HOSTED_DATABASE.replace(
+//       '<db_password>',
+//       process.env.DB_PASSWORD,
+//     ),
+//   )
+//   .then(() => console.log('DataBase connected!!'));
 
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
