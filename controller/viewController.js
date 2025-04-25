@@ -10,7 +10,6 @@ export const getOverview = catchAsync(async (req, res) => {
     title: 'All Tours',
     tours,
   });
-
 });
 
 export const getTour = catchAsync(async (req, res, next) => {
@@ -59,3 +58,10 @@ export const updateUserData = catchAsync(async (req, res, next) => {
     user: updatedUser,
   });
 });
+export const alerts = (req, res, next) => {
+  const { alert } = req.query;
+  if (alert === 'booking')
+    res.locals.alert =
+      'Your booking is successfuly completed. \n might take some time to show up in your bookings.';
+  next();
+};

@@ -1,10 +1,12 @@
 import AppError from '../utils/AppError.js';
 import catchAsync from '../utils/catchAsync.js';
 import Tour from '../Model/tourModel.js';
+import User from '../Model/userModel.js';
 import Booking from '../Model/bookingModel.js';
 import * as factoryHandler from './factoryHandler.js';
 
 import { stripe } from '../app.js';
+
 export const checkout = catchAsync(async (req, res, next) => {
   const tour = await Tour.findById(req.params.tourId);
   if (!tour) return next(new AppError('there is no Tour with this ID!', 404));
@@ -12,7 +14,7 @@ export const checkout = catchAsync(async (req, res, next) => {
   const session = await stripe.checkout.sessions.create({
     client_reference_id: req.params.tourId,
     cancel_url: `${req.protocol}://${req.get('host')}/`,
-    success_url: `${req.protocol}://${req.get('host')}/?tour=${req.params.tourId}&user=${req.user.id}&price=${tour.price}`,
+    success_url: `${req.protocol}://${req.get('host')}/my-tours?alert=booking`,
     customer_email: req.user.email,
     payment_method_types: ['card'],
     mode: 'payment',
@@ -24,7 +26,9 @@ export const checkout = catchAsync(async (req, res, next) => {
           product_data: {
             name: tour.name,
             description: tour.summary,
-            images: [`https://www.natours.dev/img/tours/${tour.imageCover}`],
+            images: [
+              `${req.protocol}://${req.get('host')}/img/tours/${tour.imageCover}`,
+            ],
           },
         },
 
@@ -32,20 +36,46 @@ export const checkout = catchAsync(async (req, res, next) => {
       },
     ],
   });
+
   res.status(200).json({
     status: 'success',
     session,
   });
 });
+//middleware
+// export const createBookingCheckout = catchAsync(async (req, res, next) => {
+//   const { tour, user, price } = req.query;
 
-export const createBookingCheckout = catchAsync(async (req, res, next) => {
-  const { tour, user, price } = req.query;
+//   if (!tour && !user && !price) return next();
+//   await Booking.create({ tour, user, price });
+//   res.redirect(req.originalUrl.split('?')[0]);
+// });
 
-  if (!tour && !user && !price) return next();
+//function to create booking in the DataBase
+const createBookingCheckout = catchAsync(async (session) => {
+  const price = session.display_items[0].price_data.unit_amount / 100;
+  const user = (await User.findOne({ email: session.customer_email })).id;
+  const tour = session.client_reference_id;
   await Booking.create({ tour, user, price });
-  res.redirect(req.originalUrl.split('?')[0]);
 });
 
+export const webhookCheckout = (req, res, next) => {
+  const signature = req.headers['stripe-signature'];
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET,
+    );
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send(`webhook error ${error.message} `);
+  }
+  if (event.type === 'checkout.session.completed')
+    createBookingCheckout(event.data.object);
+  res.status(200).json({ received: true });
+};
 export const createBooking = factoryHandler.createOne(Booking);
 export const updateBooking = factoryHandler.updateOne(Booking);
 export const deleteBooking = factoryHandler.deleteOne(Booking);

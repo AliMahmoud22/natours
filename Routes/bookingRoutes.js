@@ -5,8 +5,11 @@ import * as bookingController from '../controller/bookingController.js';
 const router = express.Router();
 
 router.use(authController.protect);
+
 router.get('/checkout/:tourId', bookingController.checkout);
+
 router.use(authController.restrict('admin', 'lead-guide'));
+
 router
   .route('/')
   .get(bookingController.getAllBookings)

@@ -5,7 +5,7 @@ import { login } from './login';
 import { logout } from './logout';
 import { updateUserSettings } from './updateUserData';
 import { createSession } from './checkout';
-
+import { showAlert } from './alerts';
 //DOM ELEMENTS
 const mapBox = document.getElementById('map');
 const loginForm = document.querySelector('.form--login');
@@ -74,4 +74,9 @@ if (checkoutBtn) {
     checkoutBtn.textContent = 'processing...';
     createSession(checkoutBtn.dataset.tourId);
   });
+}
+const alertMesg = document.querySelector('body').dataset.alert;
+if (alertMesg) {
+  showAlert('success', alertMesg, 7);
+  document.querySelector('body').dataset.alert = '';
 }

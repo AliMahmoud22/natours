@@ -12,17 +12,15 @@ const getToken = (id) => {
   });
 };
 
-const createSendToken = (user, statusCode, message, res) => {
+const createSendToken = (user, statusCode, message, req, res) => {
   const token = getToken(user._id);
-
-  const cookie_Options = {
+  res.cookie('jwt', token, {
     expires: new Date(
       Date.now() + process.env.COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
     ),
     httpOnly: true,
-  };
-  if (process.env.NODE_ENV == 'production') cookie_Options.secure = true;
-  res.cookie('jwt', token, cookie_Options);
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
+  });
 
   user.password = undefined;
   res.status(statusCode).json({
@@ -38,7 +36,7 @@ export const signUp = catchAsync(async (req, res, next) => {
   const newUser = await User.create(req.body);
   const url = `${req.protocol}://${req.get('host')}/me`;
   await new Email(newUser, url).sendWelcome();
-  createSendToken(newUser, 201, 'New user created.❤️', res);
+  createSendToken(newUser, 201, 'New user created.❤️', req, res);
 });
 
 export const login = catchAsync(async (req, res, next) => {
@@ -52,7 +50,7 @@ export const login = catchAsync(async (req, res, next) => {
   if (!user || !(await user.correctPassword(password, user.password)))
     return next(new AppError('email or password is wrong', 401));
   //3)send token to user
-  createSendToken(user, 200, 'logged in', res);
+  createSendToken(user, 200, 'logged in', req, res);
 });
 export const logout = (req, res) => {
   res.cookie('jwt', ' logged out ', {
@@ -124,7 +122,7 @@ export const forgotPassword = catchAsync(async (req, res, next) => {
   //2) get restToken
   const resetToken = user.createForgotPasswordToken();
   await user.save({ validateBeforeSave: false });
-  
+
   //3 send the token to user email
   try {
     const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
@@ -164,7 +162,7 @@ export const resetPassword = catchAsync(async (req, res, next) => {
   user.passwordResetTokenExpire = undefined;
 
   await user.save();
-  createSendToken(user, 200, 'password is changed successfuly', res);
+  createSendToken(user, 200, 'password is changed successfuly', req, res);
 });
 
 export const updatePassword = catchAsync(async (req, res, next) => {
@@ -183,7 +181,7 @@ export const updatePassword = catchAsync(async (req, res, next) => {
   currentUser.password = req.body.newPassword;
   currentUser.passwordConfirm = req.body.newPasswordConfirm;
   await currentUser.save();
-  createSendToken(currentUser, 200, 'password changed, logged in', res);
+  createSendToken(currentUser, 200, 'password changed, logged in', req, res);
 });
 
 //to render elements only if logged in (such as logout and account) otherwise render another elements(such as login and sign up)

@@ -9,7 +9,7 @@ import xss from 'xss-clean';
 import hpp from 'hpp';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
-
+import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import Stripe from 'stripe';
@@ -21,6 +21,7 @@ import tourRoute from './Routes/tourRoutes.js';
 import reviewRoute from './Routes/reviewRoutes.js';
 import viewRoute from './Routes/viewRoutes.js';
 import bookingRoute from './Routes/bookingRoutes.js';
+import * as bookingController from './controller/bookingController.js';
 
 dotenv.config({ path: './config.env' });
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -28,18 +29,21 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
- mongoose
-  .connect(
-    process.env.HOSTED_DATABASE.replace(
-      '<db_password>',
-      process.env.DB_PASSWORD,
-    ),
-  )
-  // .connect(process.env.LOCAL_DATABASE)
-  .then(() => console.log('DataBase connected!!'))
-  .catch((err) => {
-    console.log(err);
-  });
+//to allow other sites to use APIs
+app.use(cors());
+app.options('*', cors());
+app.enable('trust proxy ');
+// app.enable({ trustproxy: false });
+
+mongoose
+  .connect(process.env.LOCAL_DATABASE)
+  // .connect(
+  //   process.env.HOSTED_DATABASE.replace(
+  //     '<db_password>',
+  //     process.env.DB_PASSWORD,
+  //   ),
+  // )
+  .then(() => console.log('DataBase connected!!'));
 
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
@@ -92,6 +96,12 @@ const limiter = ratelimit({
 });
 app.use('/api', limiter);
 
+app.get(
+  '/webhook-checkout',
+  express.raw({ type: 'application/json' }),
+  bookingController.webhookCheckout,
+);
+
 app.use(
   express.json({
     limit: '10kb',
@@ -117,8 +127,8 @@ app.use(
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(compression());
+
 app.use('/', viewRoute);
-app.use( '/', viewRoute);
 app.use('/api/v1/users', userRoute);
 app.use('/api/v1/tours', tourRoute);
 app.use('/api/v1/reviews', reviewRoute);
