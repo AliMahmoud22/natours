@@ -53,7 +53,7 @@ export const checkout = catchAsync(async (req, res, next) => {
 
 //function to create booking in the DataBase
 const createBookingCheckout = catchAsync(async (session) => {
-  const price = session.display_items[0].price_data.unit_amount / 100;
+  const price = session.amount_total / 100;
   const user = (await User.findOne({ email: session.customer_email })).id;
   const tour = session.client_reference_id;
   await Booking.create({ tour, user, price });
