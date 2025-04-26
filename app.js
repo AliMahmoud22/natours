@@ -43,10 +43,10 @@ app.options('*', cors());
 app.enable('trust proxy');
 // app.enable({ trustproxy: false });
 
-console.log(process.env.DB_CLIENT);
-if (process.env.DB_CLIENT)
-  mongoose
-    // .connect(process.env.LOCAL_DATABASE)
+let isDbClientConnected = false;
+
+if (!isDbClientConnected) {
+  await mongoose
     .connect(
       process.env.HOSTED_DATABASE.replace(
         '<db_password>',
@@ -54,10 +54,11 @@ if (process.env.DB_CLIENT)
       ),
     )
     .then(() => {
-      process.env.DB_CLIENT = true;
-      console.log('DataBase connected!!');
+      isDbClientConnected = true; // Set the custom variable to true
+      console.log('Database connected.');
     })
     .catch((er) => console.log(er));
+}
 
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
@@ -154,12 +155,11 @@ app.all('*', (req, res, next) => {
 
 app.use(globalErrorHandler);
 
-
 const port = process.env.PORT || 4000;
 const server = app.listen(port, () => {
   console.log(`listening on port ${port}.........`);
 });
-process.on('unhandledRejection',async (err) => {
+process.on('unhandledRejection', async (err) => {
   console.log(err.name, '\n', err.message);
   console.log('shutting down...');
   await mongoose.connection.close();

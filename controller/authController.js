@@ -11,17 +11,31 @@ const getToken = (id) => {
     expiresIn: process.env.JWT_EXPIRESIN,
   });
 };
+const getRefreshToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_REFRESH_SECRET, {
+    expiresIn: '30d', // Refresh token valid for 30 days
+  });
+};
 
 const createSendToken = (user, statusCode, message, req, res) => {
   const token = getToken(user._id);
+  const refreshToken = getRefreshToken(user._id);
+
   res.cookie('jwt', token, {
     expires: new Date(
-      Date.now() + process.env.COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
+      Date.now() + process.env.COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000, // 90 days in milliseconds
     ),
     httpOnly: true,
     secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
   });
 
+  res.cookie('refreshToken', refreshToken, {
+    expires: new Date(
+      Date.now() + process.env.COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000, // 90 days in milliseconds
+    ),
+    httpOnly: true,
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
+  });
   user.password = undefined;
   res.status(statusCode).json({
     status: 'success',
@@ -31,7 +45,44 @@ const createSendToken = (user, statusCode, message, req, res) => {
     },
   });
 };
+const refreshAccessToken = catchAsync(async (req, res, next) => {
+  // const { refreshToken } = req.body;
+  const { refreshToken } = req.cookies;
 
+  if (!refreshToken) {
+    return next(new AppError('Refresh token is required!', 400));
+  }
+
+  try {
+    // Verify the refresh token
+    const decoded = await promisify(jwt.verify)(
+      refreshToken,
+      process.env.JWT_REFRESH_SECRET,
+    );
+
+    // Check if the user still exists
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return next(new AppError('User no longer exists!', 401));
+    }
+
+    // 4) check if passward changed
+    if (user.isPasswordChanged(decoded.iat)) {
+      return next(new AppError('this token is expired. please log in.'));
+    }
+
+    // Generate a new access token
+    const newAccessToken = getToken(user._id);
+    res.cookie('jwt', newAccessToken, {
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    });
+    res.locals.user = user;
+    req.user = user;
+    return next();
+  } catch (err) {
+    return next(new AppError('Invalid or expired refresh token!', 401));
+  }
+});
 export const signUp = catchAsync(async (req, res, next) => {
   const newUser = await User.create(req.body);
   const url = `${req.protocol}://${req.get('host')}/me`;
@@ -57,14 +108,16 @@ export const logout = (req, res) => {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
   });
+  res.cookie('refreshToken', 'logged out', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
   res.status(200).json({
     status: 'success',
   });
 };
 
 export const protect = catchAsync(async (req, res, next) => {
-  // 1) check if there is token sent
-
   let token;
   if (
     req.headers.authorization &&
@@ -74,17 +127,19 @@ export const protect = catchAsync(async (req, res, next) => {
   } else if (req.cookies.jwt) {
     token = req.cookies.jwt;
   }
-  //if there is no token send error
+  // 1) check if there is token sent
   if (!token) {
     return next(
       new AppError('You are not logged in! Please log in to get access.', 401),
     );
   }
   // 2) verify token
-  const decodedToken = await promisify(jwt.verify)(
-    token,
-    process.env.JWT_SECRET,
-  );
+  let decodedToken;
+  try {
+    decodedToken = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  } catch (error) {
+    return refreshAccessToken(req, res, next);
+  }
   // 3) user still exits and isn't deleted !
   const freshUser = await User.findById(decodedToken.id);
   if (!freshUser) {
@@ -96,6 +151,24 @@ export const protect = catchAsync(async (req, res, next) => {
   // 4) check if passward changed
   if (freshUser.isPasswordChanged(decodedToken.iat)) {
     return next(new AppError('this token is expired. please log in.'));
+  }
+
+  // 5) check if the refresh token is expired while jwt token is valid
+  try {
+    await promisify(jwt.verify)(
+      req.cookies.refreshToken,
+      process.env.JWT_REFRESH_SECRET,
+    );
+  } catch (error) {
+    //if refresh token isn't vaild then renew it
+    const refreshToken = getRefreshToken(decodedToken.id);
+    res.cookie('refreshToken', refreshToken, {
+      expires: new Date(
+        Date.now() + process.env.COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000, // 90 days in milliseconds
+      ),
+      httpOnly: true,
+      secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
+    });
   }
   res.locals.user = freshUser;
   req.user = freshUser;

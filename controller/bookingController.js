@@ -69,7 +69,6 @@ export const webhookCheckout = (req, res, next) => {
       process.env.STRIPE_WEBHOOK_SECRET,
     );
   } catch (error) {
-    console.error(error);
     return res.status(400).send(`webhook error ${error.message} `);
   }
   if (event.type === 'checkout.session.completed')
