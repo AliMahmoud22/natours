@@ -23,16 +23,27 @@ import reviewRoute from './Routes/reviewRoutes.js';
 import viewRoute from './Routes/viewRoutes.js';
 import bookingRoute from './Routes/bookingRoutes.js';
 import * as bookingController from './controller/bookingController.js';
+
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+process.on('uncaughtException', (err) => {
+  console.log('unhandeled exception caught! \n Error 💥');
+  console.log(err);
+  console.log('shutting down...');
+  process.exit(1);
+});
+
 const app = express();
 //to allow other sites to use APIs
 app.use(cors());
 app.options('*', cors());
 app.enable('trust proxy');
 // app.enable({ trustproxy: false });
+
+console.log(process.env.DB_CLIENT);
 if (process.env.DB_CLIENT)
   mongoose
     // .connect(process.env.LOCAL_DATABASE)
@@ -143,20 +154,15 @@ app.all('*', (req, res, next) => {
 
 app.use(globalErrorHandler);
 
-process.on('uncaughtException', (err) => {
-  console.log('unhandeled exception caught! \n Error 💥');
-  console.log(err);
-  console.log('shutting down...');
-  process.exit(1);
-});
 
 const port = process.env.PORT || 4000;
 const server = app.listen(port, () => {
   console.log(`listening on port ${port}.........`);
 });
-process.on('unhandledRejection', (err) => {
+process.on('unhandledRejection',async (err) => {
   console.log(err.name, '\n', err.message);
   console.log('shutting down...');
+  await mongoose.connection.close();
   server.close(() => {
     process.exit(1);
   });
