@@ -36,6 +36,9 @@ export const getMyTours = catchAsync(async (req, res, next) => {
 export const login = (req, res) => {
   res.status(200).render('login', { title: 'Log in into your account' });
 };
+export const signup = (req, res) => {
+  res.status(200).render('signUp', { title: 'Create your account' });
+};
 export const account = async (req, res, next) => {
   res.status(200).render('account', {
     title: 'Account',

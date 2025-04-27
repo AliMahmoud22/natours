@@ -9,6 +9,7 @@ router
   .route('/tour/:tourSlug')
   .get(authController.isLoggedIn, viewController.getTour);
 router.route('/login').get(authController.isLoggedIn, viewController.login);
+router.route('/signup').get(authController.isLoggedIn, viewController.signup);
 router.route('/me').get(authController.protect, viewController.account);
 router
   .route('/my-tours')

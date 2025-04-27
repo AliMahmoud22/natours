@@ -2,6 +2,7 @@
 //this file more likely used to get the data then do actions
 import { displayMap } from './mapbox';
 import { login } from './login';
+import { signUp } from './signUp';
 import { logout } from './logout';
 import { updateUserSettings } from './updateUserData';
 import { createSession } from './checkout';
@@ -13,6 +14,7 @@ const logoutLink = document.querySelector('.nav__el--logout');
 const updateUserData = document.querySelector('.form-user-data');
 const updateUserPassword = document.querySelector('.form-user-settings');
 const checkoutBtn = document.getElementById('bookTour');
+const signupForm = document.querySelector('.form--signUp');
 // VALUES
 
 // DELEGATIONS
@@ -26,6 +28,16 @@ if (loginForm) {
     const email = document.getElementById('email').value;
     const passward = document.getElementById('password').value;
     login(email, passward);
+  });
+}
+if (signupForm) {
+  signupForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const passward = document.getElementById('password').value;
+    const passwardConfirm = document.getElementById('passwordConfirm').value;
+    signUp(name, email, passward, passwardConfirm);
   });
 }
 if (logoutLink) {
