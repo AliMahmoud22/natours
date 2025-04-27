@@ -142,7 +142,7 @@ export const resizeTourImage = catchAsync(async (req, res, next) => {
       .resize(2000, 1333)
       .toFormat('jpeg')
       .jpeg(90)
-      .toFile(`starter/public/img/tours/${imageCoverName}`);
+      .toFile(`public/img/tours/${imageCoverName}`);
     req.body.imageCover = imageCoverName;
   }
   //resize images
@@ -157,7 +157,7 @@ export const resizeTourImage = catchAsync(async (req, res, next) => {
           .resize(2000, 1333)
           .toFormat('jpeg')
           .jpeg(90)
-          .toFile(`starter/public/img/tours/${imgName}`);
+          .toFile(`public/img/tours/${imgName}`);
       }),
     );
   }

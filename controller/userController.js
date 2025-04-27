@@ -1,9 +1,9 @@
+import multer from 'multer';
+import sharp from 'sharp';
 import User from './../Model/userModel.js';
 import catchAsync from './../utils/catchAsync.js';
 import AppError from '../utils/AppError.js';
 import * as factory from './factoryHandler.js';
-import multer from 'multer';
-import sharp from 'sharp';
 
 const filterBody = (body, ...filterBody) => {
   const filtered = {};
@@ -14,7 +14,7 @@ const filterBody = (body, ...filterBody) => {
 };
 // const multerStorage = multer.diskStorage({
 //   destination: (req, file, cb) => {
-//     cb(null, 'starter/public/img/users');
+//     cb(null, 'public/img/users');
 //   },
 //   filename: (req, file, cb) => {
 //     cb(
@@ -40,7 +40,8 @@ export const resizeUserphoto = catchAsync(async (req, res, next) => {
     .resize(500, 500)
     .toFormat('jpeg')
     .jpeg(90)
-    .toFile(`starter/public/img/users/${req.file.filename}`);
+    .toFile(`public/img/users/${req.file.filename}`);
+  // .toFile(`public/img/users/${req.file.filename}`);
   next();
 });
 export const updateMe = catchAsync(async (req, res, next) => {
