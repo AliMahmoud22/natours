@@ -1,6 +1,7 @@
 import Booking from '../Model/bookingModel.js';
 import Tour from '../Model/tourModel.js';
 import User from '../Model/userModel.js';
+import Review from '../Model/reviewModel.js';
 import AppError from '../utils/AppError.js';
 import catchAsync from '../utils/catchAsync.js';
 
@@ -32,6 +33,10 @@ export const getMyTours = catchAsync(async (req, res, next) => {
     title: 'my Bookings',
     tours,
   });
+});
+export const getMyReviews = catchAsync(async (req, res, next) => {
+  const reviews = await Review.find({ user: req.user.id });
+  res.status(200).render('myReviews', { title: 'my reviews', reviews });
 });
 export const login = (req, res) => {
   res.status(200).render('login', { title: 'Log in into your account' });

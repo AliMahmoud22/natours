@@ -66,8 +66,9 @@ reviewschema.post(/^findOneAnd/, async function () {
 });
 
 reviewschema.pre(/^find/, function (next) {
-  // this.populate({ path: 'tour', select: 'name' })
-  this.populate({ path: 'user', select: 'name photo' }).select('-__v');
+  this.populate({ path: 'tour', select: 'name' })
+    .populate({ path: 'user', select: 'name photo' })
+    .select('-__v');
   next();
 });
 

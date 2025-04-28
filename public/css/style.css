@@ -604,7 +604,7 @@ body {
   display: grid;
   grid-column-gap: 6rem;
   grid-auto-flow: column;
-  overflow-x: scroll;
+  overflow-x: auto;
   -ms-scroll-snap-type: x mandatory;
   scroll-snap-type: x mandatory;
 }
@@ -1322,4 +1322,48 @@ body {
   box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.15);
   -webkit-transform: translateY(-2px);
   transform: translateY(-2px);
+}
+.my-review {
+  margin-left: calc(-42px - var(--section-rotate));
+  width: calc(96rem - var(--section-rotate));
+  padding: 5rem 11px;
+  display: grid;
+  grid-column-gap: 6rem;
+  grid-auto-flow: column;
+  overflow-x: auto;
+  -ms-scroll-snap-type: x mandatory;
+  scroll-snap-type: x mandatory;
+}
+.section-my-reviews {
+  margin-top: calc(0px - var(--section-rotate));
+  padding: calc(5rem + var(--section-rotate));
+  position: relative;
+  z-index: 1000;
+  background: -webkit-gradient(
+    linear,
+    left top,
+    right bottom,
+    from(#7dd56f),
+    to(#28b487)
+  );
+  background: linear-gradient(to right bottom, #1b3517, #28b487);
+}
+.my-review-heading-secondary {
+  padding-left: calc(32rem - var(--section-rotate));
+  font-size: 2.25rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  background-image: -webkit-gradient(
+    linear,
+    left top,
+    right top,
+    from(#7dd56f),
+    to(#28b487)
+  );
+  background-image: linear-gradient(to right, #39b526, #a6f2da);
+  -webkit-background-clip: text;
+  color: transparent;
+  letter-spacing: 0.1rem;
+  line-height: 1.3;
+  display: inline-block;
 }

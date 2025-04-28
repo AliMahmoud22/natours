@@ -47,12 +47,13 @@ let isDbClientConnected = false;
 
 if (!isDbClientConnected) {
   await mongoose
-    .connect(
-      process.env.HOSTED_DATABASE.replace(
-        '<db_password>',
-        process.env.DB_PASSWORD,
-      ),
-    )
+    .connect(process.env.LOCAL_DATABASE)
+    // .connect(
+    //   process.env.HOSTED_DATABASE.replace(
+    //     '<db_password>',
+    //     process.env.DB_PASSWORD,
+    //   ),
+    // )
     .then(() => {
       isDbClientConnected = true; // Set the custom variable to true
       console.log('Database connected.');

@@ -3,7 +3,9 @@ import * as viewController from '../controller/viewController.js';
 import * as authController from '../controller/authController.js';
 
 const router = express.Router();
+
 router.use(viewController.alerts);
+
 router.route('/').get(authController.isLoggedIn, viewController.getOverview);
 router
   .route('/tour/:tourSlug')
@@ -14,7 +16,9 @@ router.route('/me').get(authController.protect, viewController.account);
 router
   .route('/my-tours')
   .get(authController.protect, viewController.getMyTours);
-
+router
+  .route('/my-reviews')
+  .get(authController.protect, viewController.getMyReviews);
 //update user data without api
 router
   .route('/submit-user-data')
