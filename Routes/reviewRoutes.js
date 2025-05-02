@@ -16,7 +16,7 @@ router
   );
 
 router
-  .route('/:id')
+  .route('/:userName/:tourName/:id?')
   .get(reviewController.getReview)
   .patch(
     authController.restrict('user', 'admin'),

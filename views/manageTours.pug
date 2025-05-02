@@ -5,36 +5,83 @@ mixin navItem(link,icon,text,active)
             svg
                 use(xlink:href=`/img/icons.svg#icon-${icon}`)
             |#{text}
-block content   
+block content 
     main.main
         .user-view
             nav.user-view__menu
                 ul.side-nav
-                    +navItem('/me',settings,' Settings',true)
+                    +navItem('/me',settings,' Settings',false)
                     +navItem('/my-tours',briefcase,' My bookings',false)
                     +navItem('/my-reviews',star,' My reviews',false)
                 -if(user.role=='admin')
                     .admin-nav
                         h5.admin-nav__heading Admin
                         ul.side-nav
-                            +navItem('#',map,' Manage tours',false)
+                            +navItem('/manage-tours',map,' Manage tours',true)
                             +navItem('#',users,' Manage users',false)
                             +navItem('#',star,' Manage reviews',false)
                             +navItem('#',briefcase,'Manage Bookings ',false)
-            .user-view__content
-                .user-view__form-container
-                    h2.heading-secondary.ma-bt-md Your account settings
-                    form.form.form-user-data
-                        .form__group
-                            label.form__label(for='name') Name
-                            input#name.form__input(type='text', value=`${user.name}`, required,name='name')
-                        .form__group.ma-bt-md
-                            label.form__label(for='email') Email address
-                            input#email.form__input(type='email', value=`${user.email}`, required,name='email')
-                        .form__group.form__photo-upload
-                            img.form__user-photo(src=`img/users/${user.photo}`, alt=`${user.name}`)
-                            input.form__upload(type='file',name='photo',id='photo')
-                            label(for='photo')  Choose new photo
-                        .form__group.right
-                            button.btn.btn--small.btn--green.btn--save--settings Save settings
+            .admin_container
+                div.action-selector
+                    label.form__label(for='formMode') Select Action
+                    select#formMode(name='formMode')
+                        option(value='add') Add Tour
+                        option(value='update') Edit Tour
+                        option(value='delete') Delete Tour
+                h2(style="margin: 9px;margin-left: 32rem;") Add / Edit / Delete Tour
+                form.form_admin_input#tourForm(enctype="multipart/form-data")
+                    div
+                        label.form__label(for='name') Tour Name
+                        input#name(type='text' ,name='name', minlength='10',required='')
+                    .form-fields
+                        div
+                            label.form__label(for='updatedName') Tour New Name
+                            input#updatedName(type='text' ,name='updatedName',updatename='', data-required='', minlength='8',required='')
+                        div
+                            label.form__label(for='price') Price ($)
+                            input#price(type='number', name='price', data-required='', required='')
+                        div
+                            label.form__label(for='duration') Duration (days)
+                            input#duration(type='number' ,name='duration',data-required='',  required='')
+                        div
+                            label.form__label(for='maxGroupSize') Max Group Size
+                            input#maxGroupSize(type='number', name='maxGroupSize',data-required='',  required='')
+                        .full-width
+                            label.form__label(for='summary') Summary
+                            textarea#summary(name='summary', rows='2',data-required='',  required='')
+                        .full-width
+                            label.form__label(for='description') Description
+                            textarea#description(name='description', rows='4')
+                        div
+                            label.form__label(for='difficulty') Difficulty
+                            select#difficulty(name='difficulty',data-required='',  required='')
+                                option(value='') Select difficulty
+                                option(value='easy') Easy
+                                option(value='medium') Medium
+                                option(value='difficult') Difficult
+                        div
+                            label.form__label(for='imageCover') Cover Image
+                            input#coverImage(type='file', name='imageCover' ,accept='image/*' ,data-required='', required='')
+                        .full-width
+                            label.form__label(for='images') Tour Images
+                            input#images(type='file' ,name='images' ,accept='image/*' ,multiple='')
+                        #locations-container(style="display: contents")
+                            .location-item
+                                label.form__label(for='coordinates') Coordinates
+                                input(type='text' name='locations[0][coordinates]' placeholder='Latitude, Longitude' data-required='', required='')
+                                label.form__label(for='address') Address
+                                input(type='text' name='locations[0][address]' placeholder='Address' data-required='', required='')
+                                label.form__label(for='description') Description
+                                input(type='text' name='locations[0][description]' placeholder='Description' data-required='', required='')
+                                label.form__label(for='day') Day
+                                input(type='date' name='locations[0][day]' placeholder='Day' data-required='', required='')
+
+                        .full-width
+                            label.form__label(for='guides') Guides
+                            textarea#guides(name='guides', rows='3', placeholder='Guides ID', data-required='', required='')
+                    .actions
+                        button.btn.btn--aqua(type='submit',name="action" ,value="add") Add Tour
+                        button.btn.btn--green(type='submit',name='action' ,value="update") Update Tour
+                        button.btn.btn--delete(type='submit',name="action" ,value="delete") Delete Tour
+                        button#add-location.btn(type='button',name='action',value="addlocation") Add Another Location
 

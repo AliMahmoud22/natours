@@ -2,15 +2,17 @@
 import axios from 'axios';
 import { showAlert } from './alerts';
 
-export const signUp = async (name, email, password, passwordConfirm) => {
+// export const signUp = async (name, email, photo, password, passwordConfirm) => {
+export const signUp = async (data) => {
   try {
-    const res = await axios.post(`/api/v1/users/signup`, {
-      name,
-      email,
-      password,
-      passwordConfirm,
-    });
-    console.log(res.status);
+    const res = await axios.post(`/api/v1/users/signup`, data);
+    // const res = await axios.post(`/api/v1/users/signup`, {
+    //   name,
+    //   email,
+    //   photo,
+    //   password,
+    //   passwordConfirm,
+    // });
     if (res.status === 201) {
       showAlert('success', 'registration succeeded');
       window.setTimeout(() => {
@@ -18,7 +20,6 @@ export const signUp = async (name, email, password, passwordConfirm) => {
       }, 1500);
     }
   } catch (err) {
-    console.error(err);
     showAlert('error', err.response.data.message);
   }
 };

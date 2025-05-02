@@ -7,6 +7,7 @@ import { logout } from './logout';
 import { updateUserSettings } from './updateUserData';
 import { createSession } from './checkout';
 import { showAlert } from './alerts';
+import { addTour, updateTour, deleteTour } from './manageTour';
 //DOM ELEMENTS
 const mapBox = document.getElementById('map');
 const loginForm = document.querySelector('.form--login');
@@ -15,6 +16,8 @@ const updateUserData = document.querySelector('.form-user-data');
 const updateUserPassword = document.querySelector('.form-user-settings');
 const checkoutBtn = document.getElementById('bookTour');
 const signupForm = document.querySelector('.form--signUp');
+const manageTourForm = document.querySelector('.form_admin_input');
+const addLocations = document.getElementById('add-location');
 // VALUES
 
 // DELEGATIONS
@@ -31,13 +34,18 @@ if (loginForm) {
   });
 }
 if (signupForm) {
-  signupForm.addEventListener('submit', (e) => {
+  signupForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const name = document.getElementById('name').value;
-    const email = document.getElementById('email').value;
-    const passward = document.getElementById('password').value;
-    const passwardConfirm = document.getElementById('passwordConfirm').value;
-    signUp(name, email, passward, passwardConfirm);
+    const form = new FormData();
+    form.append('name', document.getElementById('name').value);
+    form.append('email', document.getElementById('email').value);
+    form.append('photo', document.getElementById('photo').files[0]);
+    form.append('password', document.getElementById('password').value);
+    form.append(
+      'passwordConfirm',
+      document.getElementById('passwordConfirm').value,
+    );
+    await signUp(form);
   });
 }
 if (logoutLink) {
@@ -91,4 +99,175 @@ const alertMesg = document.querySelector('body').dataset.alert;
 if (alertMesg) {
   showAlert('success', alertMesg, 7);
   document.querySelector('body').dataset.alert = '';
+}
+
+if (manageTourForm) {
+  //to show up delete form or add / edit form
+  const modeSelect = document.getElementById('formMode');
+  const formFields = document.querySelector('.form-fields');
+  const actions = document.querySelector('.actions');
+
+  modeSelect.addEventListener('change', function () {
+    const selected = this.value;
+    // Show/hide rest of the form fields
+    if (selected === 'delete') {
+      //to disable required fields that are hidden
+
+      formFields.querySelectorAll('input, textarea, select').forEach((el) => {
+        if (el.hasAttribute('data-required')) {
+          el.removeAttribute('required');
+          el.disabled = true;
+        }
+      });
+      //hide unnecessary fields
+      formFields.style.display = 'none';
+      // Show only delete buttons
+      actions.querySelectorAll('button').forEach((btn) => {
+        btn.style.display = btn.value === selected ? 'inline-block' : 'none';
+      });
+    }
+    //show the whole form in add / edit tour
+    else {
+      formFields.style.display = 'contents';
+      formFields.querySelectorAll('input, textarea, select').forEach((el) => {
+        if (el.hasAttribute('data-required')) {
+          if (selected === 'add') {
+            if (!el.hasAttribute('updatename')) {
+              el.setAttribute('required', '');
+              el.disabled = false;
+            } else {
+              el.removeAttribute('required');
+              el.disabled = true;
+              el.parentElement.style.display = 'none';
+            }
+          }
+          //selected = update
+          else if (selected === 'update') {
+            if (el.hasAttribute('updatename'))
+              el.parentElement.style.display = 'inline-block';
+            el.disabled = false;
+            el.removeAttribute('required'); // admin can edit any field not all of them
+            // el.setAttribute('required', '');
+          }
+        }
+      });
+
+      // Show only add or update buttons
+      actions.querySelectorAll('button').forEach((btn) => {
+        btn.style.display = btn.value === selected ? 'inline-block' : 'none';
+        if (btn.value === 'addlocation') btn.style.display = 'inline-block';
+      });
+    }
+  });
+  modeSelect.dispatchEvent(new Event('change'));
+
+  //listen to add location button if admin wants to add more locations
+  addLocations.addEventListener('click', () => {
+    const container = document.getElementById('locations-container');
+    const locationCount = container.children.length;
+
+    const newLocation = document.createElement('div');
+    newLocation.classList.add('location-item');
+    newLocation.innerHTML = `
+    <label class="form__label" class="form__label" for="coordinates">Coordinates</label>
+    <input type="text" name="locations[${locationCount}][coordinates]" placeholder="Latitude, Longitude" data-required='' required />
+
+    <label class="form__label" for="address">Address</label>
+    <input type="text" name="locations[${locationCount}][address]" placeholder="Address" data-required='' required />
+
+    <label class="form__label" for="description">Description</label>
+    <input type="text" name="locations[${locationCount}][description]" placeholder="Description" data-required='' required />
+
+    <label class="form__label" for="day">Day</label>
+    <input type="date" name="locations[${locationCount}][day]" placeholder="Day" data-required='' required />
+  `;
+    container.appendChild(newLocation);
+  });
+  // listen to form event
+  manageTourForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const clickedButton = document.activeElement; // The button that triggered the form submission
+    const action = clickedButton.value; // Get the value of the clicked button
+    let tourname;
+    //delete Tour
+    if (action === 'delete') {
+      tourname = document.getElementById('name').value;
+      await deleteTour(tourname);
+    } else {
+      // Use FormData directly from the form
+      const formData = new FormData(manageTourForm);
+      const finalForm = new FormData();
+      // Append additional fields for locations and startLocation
+      let locations = [];
+      let startLocation = {};
+      let startDates = [];
+      let guides = [];
+      // Process location fields
+      formData.forEach((value, key) => {
+        const match = key.match(/^locations\[(\d+)]\[(.+)]$/); // Match keys like "locations[0][coordinates]"
+        if (value) {
+          if (match) {
+            const index = match[1]; // Extract the index (e.g., "0")
+            const field = match[2]; // Extract the field name (e.g., "coordinates")
+            // Ensure the locations array has an object for this index
+            if (!locations[index]) locations[index] = {};
+            // Check if the field is coordinates, then split and reverse it
+            if (field === 'coordinates') {
+              value = value
+                .split(',')
+                .reverse()
+                .map((coord) => parseFloat(coord)); // MongoDB accepts [lng, lat]
+            }
+
+            if (field === 'day') {
+              value = new Date(value).toISOString();
+              startDates.push(value);
+            }
+            // Add the first location as startLocation
+            if (index === '0') {
+              startLocation[field] = value;
+            }
+
+            // Assign the value to the corresponding field in the object
+            locations[index][field] = value;
+          } else {
+            if (key === 'guides') {
+              guides = value.split(',');
+            } else {
+              if (key === 'updatedName') {
+                finalForm.set('name', value);
+                finalForm.append('slug', value.replaceAll(' ', '-'));
+              } // only in update method
+              else {
+                finalForm.append(key, value);
+              }
+            }
+          }
+        }
+      });
+      // Append locations and startLocation to FormData
+      if (locations.length > 0) {
+        finalForm.append('locations', JSON.stringify(locations)); // parse json in backend
+      }
+      if (Object.keys(startLocation).length > 0) {
+        finalForm.append('startLocation', JSON.stringify(startLocation));
+      }
+      if (guides.length > 0) {
+        finalForm.append('guides', JSON.stringify(guides));
+      }
+      if (startDates.length > 0) {
+        startDates.forEach((date) => finalForm.append('startDates', date)); // Append each date individually
+      }
+      // Add Tour
+      if (action === 'add') {
+        await addTour(finalForm);
+      }
+      // Update Tour
+      else if (action === 'update') {
+        tourname = document.getElementById('name').value;
+        await updateTour(tourname, finalForm);
+      }
+    }
+  });
 }

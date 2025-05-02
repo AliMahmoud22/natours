@@ -29,9 +29,12 @@ Router.route('/')
   .post(
     authController.protect,
     authController.restrict('admin', 'lead-guide'),
+    tourController.uploadTourImage,
+    tourController.resizeTourImage,
     tourController.createTour,
   );
-Router.route('/:id/:name?')
+// Router.route('/:id/:name?')
+Router.route('/:name/:id?')
   .get(tourController.getTour)
   .patch(
     authController.protect,

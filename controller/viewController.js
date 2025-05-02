@@ -73,3 +73,7 @@ export const alerts = (req, res, next) => {
       'Your booking is successfuly completed. \n might take some time to show up in your bookings.';
   next();
 };
+
+export const manageTours = (req, res, next) => {
+  res.status(200).render('manageTours', { title: 'manage Tour' });
+};

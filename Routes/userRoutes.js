@@ -3,7 +3,11 @@ import * as usercontroller from '../controller/userController.js';
 import * as authController from '../controller/authController.js';
 
 const Router = express.Router();
-Router.route('/signup').post(authController.signUp);
+Router.route('/signup').post(
+  usercontroller.uploadPhoto,
+  usercontroller.resizeUserphoto,
+  authController.signUp,
+);
 Router.route('/login').post(authController.login);
 Router.route('/logout').get(authController.logout);
 Router.route('/forgotPassword').post(authController.forgotPassword);

@@ -34,14 +34,21 @@ const upload = multer({ storage: multerStorage, fileFilter: multerFileFilter });
 
 export const uploadPhoto = upload.single('photo');
 export const resizeUserphoto = catchAsync(async (req, res, next) => {
+  console.log('inside resize file: ', req.file);
   if (!req.file) return next();
-  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
+  //logged in user wants to change photo
+  if (req.user) req.file.filename = `user-${req.user.email}-${Date.now()}.jpeg`;
+  //user signin up with photo uploaded
+  else {
+    console.log('inside resize body :', req.body);
+    req.file.filename = `user-${req.body.email}-${Date.now()}.jpeg`;
+  }
+
   await sharp(req.file.buffer)
     .resize(500, 500)
     .toFormat('jpeg')
     .jpeg(90)
     .toFile(`public/img/users/${req.file.filename}`);
-  // .toFile(`public/img/users/${req.file.filename}`);
   next();
 });
 export const updateMe = catchAsync(async (req, res, next) => {

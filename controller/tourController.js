@@ -135,31 +135,35 @@ export const uploadTourImage = upload.fields([
   },
 ]);
 export const resizeTourImage = catchAsync(async (req, res, next) => {
-  if (req.files.imageCover) {
-    //resize imageCover
-    const imageCoverName = `tour-${req.params.id}-${Date.now()}-cover.jpeg`;
-    await sharp(req.files.imageCover[0].buffer)
-      .resize(2000, 1333)
-      .toFormat('jpeg')
-      .jpeg(90)
-      .toFile(`public/img/tours/${imageCoverName}`);
-    req.body.imageCover = imageCoverName;
-  }
-  //resize images
-  if (req.files.images) {
-    req.body.images = [];
-    let imgName = '';
-    await Promise.all(
-      req.files.images.map(async (img, i) => {
-        imgName = `tour-${req.params.id}-${Date.now()}-${i + 1}.jpeg`;
-        req.body.images.push(imgName);
-        await sharp(img.buffer)
-          .resize(2000, 1333)
-          .toFormat('jpeg')
-          .jpeg(90)
-          .toFile(`public/img/tours/${imgName}`);
-      }),
-    );
+  if (req.files) {
+    if (req.files.imageCover) {
+      //resize imageCover
+      // const imageCoverName = `tour-${req.params.id}-${Date.now()}-cover.jpeg`;
+      const imageCoverName = `tour-${req.body.name}-${Date.now()}-cover.jpeg`;
+      await sharp(req.files.imageCover[0].buffer)
+        .resize(2000, 1333)
+        .toFormat('jpeg')
+        .jpeg(90)
+        .toFile(`public/img/tours/${imageCoverName}`);
+      req.body.imageCover = imageCoverName;
+    }
+    //resize images
+    if (req.files.images) {
+      req.body.images = [];
+      let imgName = '';
+      await Promise.all(
+        req.files.images.map(async (img, i) => {
+          // imgName = `tour-${req.params.id}-${Date.now()}-${i + 1}.jpeg`;
+          imgName = `tour-${req.body.name}-${Date.now()}-${i + 1}.jpeg`;
+          req.body.images.push(imgName);
+          await sharp(img.buffer)
+            .resize(2000, 1333)
+            .toFormat('jpeg')
+            .jpeg(90)
+            .toFile(`public/img/tours/${imgName}`);
+        }),
+      );
+    }
   }
   next();
 });

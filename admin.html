@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin - Manage Tours</title>
+    <style>
+      /* .admin_container {
+        max-width: 1200px;
+        margin: 30px auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      } */
+
+      .form__input {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+
+      label {
+        font-weight: bold;
+        margin-bottom: 5px;
+        display: block;
+        color: #555;
+      }
+
+      /* input[type='text'],
+      input[type='number'],
+      input[type='file'],
+      input[type='date'],
+      textarea,
+      select {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      } */
+
+      /* textarea {
+        resize: vertical;
+      }
+
+      .full-width {
+        grid-column: 1 / 3;
+      }
+
+      .actions {
+        grid-column: 1 / 3;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 20px;
+      } */
+
+      button {
+        background-color: #3498db;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      button:hover {
+        background-color: #2980b9;
+      }
+
+      .delete-btn {
+        background-color: #e74c3c;
+      }
+
+      .delete-btn:hover {
+        background-color: #c0392b;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Admin Dashboard</h1>
+      <p>Manage Tours</p>
+    </header>
+
+    <div class="container">
+      <h2>Add / Edit Tour</h2>
+      <form id="tourForm" class="form__input">
+        <div>
+          <label for="name">Tour Name</label>
+          <input type="text" id="name" name="name" required />
+        </div>
+
+        <div>
+          <label for="price">Price ($)</label>
+          <input type="number" id="price" name="price" required />
+        </div>
+
+        <div>
+          <label for="duration">Duration (days)</label>
+          <input type="number" id="duration" name="duration" required />
+        </div>
+
+        <div>
+          <label for="maxGroupSize">Max Group Size</label>
+          <input type="number" id="maxGroupSize" name="maxGroupSize" required />
+        </div>
+
+        <div class="full-width">
+          <label for="summary">Summary</label>
+          <textarea id="summary" name="summary" rows="2" required></textarea>
+        </div>
+
+        <div class="full-width">
+          <label for="description">Description</label>
+          <textarea
+            id="description"
+            name="description"
+            rows="4"
+            required
+          ></textarea>
+        </div>
+
+        <div>
+          <label for="difficulty">Difficulty</label>
+          <select id="difficulty" name="difficulty" required>
+            <option value="">Select difficulty</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="difficult">Difficult</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="coverImage">Cover Image</label>
+          <input
+            type="file"
+            id="coverImage"
+            name="coverImage"
+            accept="image/*"
+            required
+          />
+        </div>
+
+        <div class="full-width">
+          <label for="images">Tour Images</label>
+          <input
+            type="file"
+            id="images"
+            name="images"
+            accept="image/*"
+            multiple
+          />
+        </div>
+
+        <div>
+          <label for="startDates">Start Dates</label>
+          <input type="date" id="startDates" name="startDates" multiple />
+        </div>
+
+        <div>
+          <label for="startLocation">Start Location</label>
+          <input
+            type="text"
+            id="startLocation"
+            name="startLocation"
+            placeholder="Latitude, Longitude"
+            required
+          />
+        </div>
+
+        <div class="full-width">
+          <label for="locations">Locations</label>
+          <textarea
+            id="locations"
+            name="locations"
+            rows="3"
+            placeholder="Add locations here..."
+            required
+          ></textarea>
+        </div>
+
+        <div class="full-width">
+          <label for="guides">Guides</label>
+          <textarea
+            id="guides"
+            name="guides"
+            rows="3"
+            placeholder="Guides ID"
+            required
+          ></textarea>
+        </div>
+
+        <div class="actions">
+          <button type="submit">Save Tour</button>
+          <button type="button" class="delete-btn">Delete Tour</button>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>

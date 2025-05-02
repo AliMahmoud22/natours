@@ -84,6 +84,7 @@ const refreshAccessToken = catchAsync(async (req, res, next) => {
   }
 });
 export const signUp = catchAsync(async (req, res, next) => {
+  if (req.file) req.body.photo = req.file.filename;
   const newUser = await User.create(req.body);
   const url = `${req.protocol}://${req.get('host')}/me`;
   await new Email(newUser, url).sendWelcome();
@@ -277,10 +278,12 @@ export const isLoggedIn = async (req, res, next) => {
         return next();
       }
       //user logged in
+
       res.locals.user = user;
     } catch (err) {
       return next();
     }
   }
+
   next();
 };

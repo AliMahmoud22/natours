@@ -5,13 +5,13 @@ import * as authController from '../controller/authController.js';
 const router = express.Router();
 
 router.use(viewController.alerts);
+router.use(authController.isLoggedIn);
+router.route('/').get(viewController.getOverview);
+router.route('/tour/:tourSlug').get(viewController.getTour);
+router.route('/login').get(viewController.login);
+router.route('/signup').get(viewController.signup);
 
-router.route('/').get(authController.isLoggedIn, viewController.getOverview);
-router
-  .route('/tour/:tourSlug')
-  .get(authController.isLoggedIn, viewController.getTour);
-router.route('/login').get(authController.isLoggedIn, viewController.login);
-router.route('/signup').get(authController.isLoggedIn, viewController.signup);
+
 router.route('/me').get(authController.protect, viewController.account);
 router
   .route('/my-tours')
@@ -23,4 +23,16 @@ router
 router
   .route('/submit-user-data')
   .post(authController.protect, viewController.updateUserData);
+
+  
+router
+  .route('/manage-tours')
+  .get(
+    authController.protect,
+    authController.restrict('admin'),
+    viewController.manageTours,
+  );
+// router.route('/manage-users').get(authController.protect,authController.restrict('admin'),viewController.manageUsers);
+// router.route('/manage-reviews').get(authController.protect,authController.restrict('admin'),viewController.manageReviews);
+// router.route('/manage-bookings').get(authController.protect,authController.restrict('admin'),viewController.manageBookings);
 export default router;
