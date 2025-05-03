@@ -4,6 +4,7 @@ import User from '../Model/userModel.js';
 import Review from '../Model/reviewModel.js';
 import AppError from '../utils/AppError.js';
 import catchAsync from '../utils/catchAsync.js';
+import { title } from 'process';
 
 export const getOverview = catchAsync(async (req, res) => {
   const tours = await Tour.find();
@@ -76,4 +77,7 @@ export const alerts = (req, res, next) => {
 
 export const manageTours = (req, res, next) => {
   res.status(200).render('manageTours', { title: 'manage Tour' });
+};
+export const manageUsers = (req, res, next) => {
+  res.status(200).render('manageUsers', { title: 'manage User' });
 };

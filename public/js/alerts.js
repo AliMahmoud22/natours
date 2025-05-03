@@ -3,6 +3,7 @@ export const hideAlert = () => {
   const el = document.querySelector('.alert');
   if (el) el.parentElement.removeChild(el);
 };
+//type ( success , error )
 export const showAlert = (type, message, time = 5) => {
   hideAlert();
   const markup = `<div class="alert alert--${type}">${message}</div>`;

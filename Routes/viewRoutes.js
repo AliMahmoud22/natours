@@ -11,7 +11,6 @@ router.route('/tour/:tourSlug').get(viewController.getTour);
 router.route('/login').get(viewController.login);
 router.route('/signup').get(viewController.signup);
 
-
 router.route('/me').get(authController.protect, viewController.account);
 router
   .route('/my-tours')
@@ -24,7 +23,6 @@ router
   .route('/submit-user-data')
   .post(authController.protect, viewController.updateUserData);
 
-  
 router
   .route('/manage-tours')
   .get(
@@ -32,7 +30,13 @@ router
     authController.restrict('admin'),
     viewController.manageTours,
   );
-// router.route('/manage-users').get(authController.protect,authController.restrict('admin'),viewController.manageUsers);
+router
+  .route('/manage-users')
+  .get(
+    authController.protect,
+    authController.restrict('admin'),
+    viewController.manageUsers,
+  );
 // router.route('/manage-reviews').get(authController.protect,authController.restrict('admin'),viewController.manageReviews);
 // router.route('/manage-bookings').get(authController.protect,authController.restrict('admin'),viewController.manageBookings);
 export default router;

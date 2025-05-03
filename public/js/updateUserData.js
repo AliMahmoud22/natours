@@ -7,10 +7,10 @@ export const updateUserSettings = async (data, type) => {
   try {
     const res = await axios.patch(url, data);
     if (res.status == 200) {
-      showAlert('success', 'settings updated successfully');
+      showAlert('success', 'settings updated successfully',10);
       window.setTimeout(() => {
         location.reload();
-      }, 2);
+      }, 10000);
     }
   } catch (error) {
     showAlert('error', error.response.data.message);

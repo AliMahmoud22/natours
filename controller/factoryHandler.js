@@ -2,6 +2,8 @@ import AppError from './../utils/AppError.js';
 import catchAsync from './../utils/catchAsync.js';
 import apiFeatures from './../utils/apiFeatures.js';
 import Review from '../Model/reviewModel.js';
+import Tour from '../Model/tourModel.js';
+import User from '../Model/userModel.js';
 export const deleteOne = (Model) =>
   catchAsync(async (req, res, next) => {
     let doc;
@@ -20,15 +22,19 @@ export const deleteOne = (Model) =>
             select: 'name',
             match: { name: req.params.tourName },
           });
-      } else doc = await Model.findOneAndDelete({ name: req.params.name });
+      } else if (Model === User)
+        doc = await Model.findOneAndDelete({ email: req.params.email });
+      else doc = await Model.findOneAndDelete({ name: req.params.name });
     }
 
     if (!doc) {
-      return next(new AppError('no document found with that id!', 404));
+      return next(
+        new AppError(`No ${Model.modelName} found with that id!`, 404),
+      );
     }
     res.status(204).json({
       status: 'success',
-      message: 'document is deleted successfully',
+      message: `${Model.modelName} is deleted successfully`,
     });
   });
 
@@ -46,8 +52,6 @@ export const createOne = (Model) =>
 export const updateOne = (Model) =>
   catchAsync(async (req, res, next) => {
     prepareData(req);
-    console.log(req.params);
-    console.log(req.body);
     let updatedDocument;
     if (req.params.id) {
       updatedDocument = await Model.findByIdAndUpdate(req.params.id, req.body, {
@@ -66,15 +70,24 @@ export const updateOne = (Model) =>
         )
           .populate({
             path: 'user',
-            match: { name: req.params.userName },
+            // match: { name: req.params.userName },
           })
           .populate({
             path: 'tour',
-            match: { name: req.params.tourName },
+            // match: { name: req.params.tourName },
           });
-      } else {
+      } else if (Model === Tour) {
         updatedDocument = await Model.findOneAndUpdate(
           { name: req.params.name },
+          req.body,
+          {
+            new: true,
+            runValidators: true,
+          },
+        );
+      } else if (Model === User) {
+        updatedDocument = await Model.findOneAndUpdate(
+          { email: req.params.email },
           req.body,
           {
             new: true,
@@ -85,7 +98,9 @@ export const updateOne = (Model) =>
     }
 
     if (!updatedDocument) {
-      return next(new AppError(`Document isn't found to update.`, 404));
+      return next(
+        new AppError(`${Model.modelName} isn't found to update.`, 404),
+      );
     }
     res.status(200).json({
       status: 'success',
@@ -95,16 +110,32 @@ export const updateOne = (Model) =>
 
 export const getOne = (Model, populateOptions) =>
   catchAsync(async (req, res, next) => {
-    let query = Model.findById(req.params.id);
+    let query;
+    if (req.params.id) query = Model.findById(req.params.id);
+    else {
+      //if searching with user email
+      if (req.params.email) query = Model.findOne({ email: req.params.email });
+      //if searching about review with tour's name and user's email
+      else if (req.params.tourName && req.params.userEmail)
+        query = Model.findOne({
+          'user.email': req.params.userEmail,
+          'tour.name': req.params.tourName,
+        })
+          .populate('tour')
+          .populate('user');
+    }
+
     if (populateOptions) query = query.populate(populateOptions);
 
     const doc = await query;
     if (!doc) {
-      return next(new AppError('no Document found with that id!', 404));
+      return next(
+        new AppError(`No ${Model.modelName} found with that id!`, 404),
+      );
     }
     res.status(200).json({
-      status: 'success',
-      message: 'Document found',
+      status: `success`,
+      message: `${Model.modelName} found`,
       doc,
     });
   });
@@ -113,7 +144,6 @@ export const getAll = (Model) =>
   catchAsync(async (req, res, next) => {
     //filter is used to get reviews of tour
     let filter = {};
-
     if (req.params.tourId) filter = { tour: req.params.tourId };
     const apiFeaturesobj = new apiFeatures(Model.find(filter), req.query)
       .filter()

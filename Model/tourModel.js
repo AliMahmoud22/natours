@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import slugify from 'slugify';
-// const User = require('./userModel');
-//const validator = require('validator'); NPM 3rd party validtor but not so useful now
+
 const TourSchema = new mongoose.Schema(
   {
     name: {
@@ -12,7 +11,6 @@ const TourSchema = new mongoose.Schema(
       select: true,
       maxlength: [40, 'A tour name must have less or equal than 40 character'],
       minlength: [10, 'A tour name must have more or equal than 10 character'],
-      // validate: [validator.isAlpha, 'name must not contain numbers!'],
     },
     price: { type: Number, required: [true, 'A tour must have a price'] },
 
@@ -141,25 +139,6 @@ TourSchema.pre(/^find/, function (next) {
   });
   next();
 });
-
-// TourSchema.post(/^find/, function (docs, next) {
-//   const timeTook = Date.now() - this.date;
-//   console.log('time took', timeTook);
-//   next();
-// });
-
-// //embedd tour guieds in tour docu
-// TourSchema.pre('save', async function (next) {
-//   const guidesArray = this.guides.map(async (id) => await User.findById(id));
-//   this.guides =await Promise.all( guidesArray);
-//   next();
-// });
-
-// //aggregation middleware
-// TourSchema.pre('aggregate', function (next) {
-//   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
-//   next();
-// });
 
 //Tour model
 const Tour = mongoose.model('Tour', TourSchema);

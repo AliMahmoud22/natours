@@ -42,14 +42,7 @@ export const checkout = catchAsync(async (req, res, next) => {
     session,
   });
 });
-//middleware
-// export const createBookingCheckout = catchAsync(async (req, res, next) => {
-//   const { tour, user, price } = req.query;
 
-//   if (!tour && !user && !price) return next();
-//   await Booking.create({ tour, user, price });
-//   res.redirect(req.originalUrl.split('?')[0]);
-// });
 
 //function to create booking in the DataBase
 const createBookingCheckout = catchAsync(async (session) => {

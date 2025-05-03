@@ -18,9 +18,9 @@ block content
                         h5.admin-nav__heading Admin
                         ul.side-nav
                             +navItem('/manage-tours',map,' Manage tours',false)
-                            +navItem('#',users,' Manage users',false)
-                            +navItem('#',star,' Manage reviews',false)
-                            +navItem('#',briefcase,'Manage Bookings ',false)
+                            +navItem('/manage-users',users,' Manage users',false)
+                            +navItem('/manage-reviews',star,' Manage reviews',false)
+                            +navItem('/manage-bookings',briefcase,'Manage Bookings ',false)
             .user-view__content
                 .user-view__form-container
                     h2.heading-secondary.ma-bt-md Your account settings

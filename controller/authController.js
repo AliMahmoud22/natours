@@ -46,7 +46,6 @@ const createSendToken = (user, statusCode, message, req, res) => {
   });
 };
 const refreshAccessToken = catchAsync(async (req, res, next) => {
-  // const { refreshToken } = req.body;
   const { refreshToken } = req.cookies;
 
   if (!refreshToken) {
@@ -84,7 +83,6 @@ const refreshAccessToken = catchAsync(async (req, res, next) => {
   }
 });
 export const signUp = catchAsync(async (req, res, next) => {
-  if (req.file) req.body.photo = req.file.filename;
   const newUser = await User.create(req.body);
   const url = `${req.protocol}://${req.get('host')}/me`;
   await new Email(newUser, url).sendWelcome();

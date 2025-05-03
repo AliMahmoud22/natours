@@ -8,6 +8,7 @@ import { updateUserSettings } from './updateUserData';
 import { createSession } from './checkout';
 import { showAlert } from './alerts';
 import { addTour, updateTour, deleteTour } from './manageTour';
+import { getUserInfo, deleteUser, updateUser } from './manageUser';
 //DOM ELEMENTS
 const mapBox = document.getElementById('map');
 const loginForm = document.querySelector('.form--login');
@@ -18,7 +19,7 @@ const checkoutBtn = document.getElementById('bookTour');
 const signupForm = document.querySelector('.form--signUp');
 const manageTourForm = document.querySelector('.form_admin_input');
 const addLocations = document.getElementById('add-location');
-// VALUES
+const manageUserForm = document.getElementById('manageUserForm');
 
 // DELEGATIONS
 if (mapBox) {
@@ -101,12 +102,7 @@ if (alertMesg) {
   document.querySelector('body').dataset.alert = '';
 }
 
-if (manageTourForm) {
-  //to show up delete form or add / edit form
-  const modeSelect = document.getElementById('formMode');
-  const formFields = document.querySelector('.form-fields');
-  const actions = document.querySelector('.actions');
-
+const formMode = (modeSelect, formFields, actions) => {
   modeSelect.addEventListener('change', function () {
     const selected = this.value;
     // Show/hide rest of the form fields
@@ -125,6 +121,9 @@ if (manageTourForm) {
       actions.querySelectorAll('button').forEach((btn) => {
         btn.style.display = btn.value === selected ? 'inline-block' : 'none';
       });
+      //hide get User in manage user form
+      const getUserInfoBtn = document.getElementById('getuserinfo');
+      if (getUserInfoBtn) getUserInfoBtn.style.display = 'none';
     }
     //show the whole form in add / edit tour
     else {
@@ -157,10 +156,20 @@ if (manageTourForm) {
         btn.style.display = btn.value === selected ? 'inline-block' : 'none';
         if (btn.value === 'addlocation') btn.style.display = 'inline-block';
       });
+      //show get User in manage User form
+      const getUserInfoBtn = document.getElementById('getuserinfo');
+      if (getUserInfoBtn) getUserInfoBtn.style.display = 'inline-block';
     }
   });
   modeSelect.dispatchEvent(new Event('change'));
+};
 
+if (manageTourForm) {
+  //to show up delete form or add / edit form
+  const modeSelect = document.getElementById('formMode');
+  const formFields = document.querySelector('.form-fields');
+  const actions = document.querySelector('.actions');
+  formMode(modeSelect, formFields, actions);
   //listen to add location button if admin wants to add more locations
   addLocations.addEventListener('click', () => {
     const container = document.getElementById('locations-container');
@@ -269,5 +278,56 @@ if (manageTourForm) {
         await updateTour(tourname, finalForm);
       }
     }
+  });
+}
+if (manageUserForm) {
+  //to show formFields related to admin selection
+  const modeSelect = document.getElementById('formMode');
+  const formFields = document.querySelector('.form-fields');
+  const actions = document.querySelector('.actions');
+  var emailElement = document.getElementById('email');
+  formMode(modeSelect, formFields, actions);
+  //fetch user info when admin click get user
+  const fetchUserForm = document.getElementById('fetchUserForm');
+
+  fetchUserForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    let email = emailElement.value;
+    const res = await getUserInfo(email);
+
+    if (res.status === 200) {
+      const user = res.data.doc;
+      // Populate the form with user data
+      document.getElementById('name').value = user.name;
+      document.getElementById('role').value = user.role;
+      const img = document.querySelector('.form__user-photo');
+      img.removeAttribute('src');
+      img.setAttribute('src', `img/users/${user.photo}`);
+
+      // Show the user management form
+      manageUserForm.style.display = 'block';
+    } else {
+      showAlert('error', 'User not found!');
+    }
+  });
+
+  manageUserForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const clickedButton = document.activeElement; // The button that triggered the form submission
+    const action = clickedButton.value;
+    let email = emailElement.value;
+    if (action == 'update') {
+      const newform = new FormData();
+      const email = document.getElementById('email').value;
+      const name = document.getElementById('name').value;
+      const role = document.getElementById('role').value;
+      const photo = document.getElementById('photo').files[0];
+      newform.append('email', email);
+      if (name) newform.append('name', name);
+      if (role) newform.append('role', role);
+      if (photo) newform.append('photo', photo);
+
+      await updateUser(email, newform);
+    } else await deleteUser(email);
   });
 }

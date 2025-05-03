@@ -153,7 +153,6 @@ export const resizeTourImage = catchAsync(async (req, res, next) => {
       let imgName = '';
       await Promise.all(
         req.files.images.map(async (img, i) => {
-          // imgName = `tour-${req.params.id}-${Date.now()}-${i + 1}.jpeg`;
           imgName = `tour-${req.body.name}-${Date.now()}-${i + 1}.jpeg`;
           req.body.images.push(imgName);
           await sharp(img.buffer)

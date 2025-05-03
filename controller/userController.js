@@ -37,13 +37,20 @@ export const resizeUserphoto = catchAsync(async (req, res, next) => {
   console.log('inside resize file: ', req.file);
   if (!req.file) return next();
   //logged in user wants to change photo
-  if (req.user) req.file.filename = `user-${req.user.email}-${Date.now()}.jpeg`;
+  if (req.user) {
+    //admin wants to change user's photo
+    if (req.user.role == 'admin' && req.body.email !== req.user.email) {
+      req.file.filename = `user-${req.body.email}-${Date.now()}.jpeg`;
+    }
+    //logged in user changing their photo
+    else req.file.filename = `user-${req.user.email}-${Date.now()}.jpeg`;
+  }
   //user signin up with photo uploaded
   else {
     console.log('inside resize body :', req.body);
     req.file.filename = `user-${req.body.email}-${Date.now()}.jpeg`;
   }
-
+  req.body.photo = req.file.filename;
   await sharp(req.file.buffer)
     .resize(500, 500)
     .toFormat('jpeg')

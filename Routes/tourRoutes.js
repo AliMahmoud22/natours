@@ -33,7 +33,6 @@ Router.route('/')
     tourController.resizeTourImage,
     tourController.createTour,
   );
-// Router.route('/:id/:name?')
 Router.route('/:name/:id?')
   .get(tourController.getTour)
   .patch(

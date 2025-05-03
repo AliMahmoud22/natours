@@ -30,9 +30,13 @@ Router.use(authController.restrict('admin'));
 Router.route('/')
   .get(usercontroller.getAllUsers)
   .post(usercontroller.createUser);
-Router.route('/:id')
+Router.route('/:email/:id?')
   .get(usercontroller.getUser)
-  .patch(usercontroller.updateUser)
+  .patch(
+    usercontroller.uploadPhoto,
+    usercontroller.resizeUserphoto,
+    usercontroller.updateUser,
+  )
   .delete(usercontroller.deleteUser);
 
 export default Router;

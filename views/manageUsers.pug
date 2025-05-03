@@ -1,0 +1,55 @@
+extends base
+mixin navItem(link,icon,text,active)
+    li(class=`${active?'side-nav--active' : ''}`)
+        a(href=`${link}`)
+            svg
+                use(xlink:href=`/img/icons.svg#icon-${icon}`)
+            |#{text}
+block content 
+    main.main
+        .user-view
+            nav.user-view__menu
+                ul.side-nav
+                    +navItem('/me',settings,' Settings',false)
+                    +navItem('/my-tours',briefcase,' My bookings',false)
+                    +navItem('/my-reviews',star,' My reviews',false)
+                -if(user.role=='admin')
+                    .admin-nav
+                        h5.admin-nav__heading Admin
+                        ul.side-nav
+                            +navItem('/manage-tours',map,' Manage tours',false)
+                            +navItem('/manage-users',users,' Manage users',true)
+                            +navItem('/manage-reviews',star,' Manage reviews',false)
+                            +navItem('/manage-bookings',briefcase,'Manage Bookings ',false)
+            .admin_container
+                div.action-selector
+                    label.form__label(for='formMode') Select Action
+                    select#formMode(name='formMode')
+                        option(value='update') Edit User
+                        option(value='delete') Delete User
+                h2(style="margin: 9px;margin-left: 32rem;") Add / Edit / Delete User                
+                //- Form to get user by email
+                form#fetchUserForm
+                    .form__group.ma-bt-md
+                        label.form__label(for="email")  User's Email
+                        input#email.form__input(type="email", name="email", placeholder="Enter user's email", required)
+                    button#getuserinfo.btn.btn--green(type="submit",style='margin-left: 40%') Get User
+                form#manageUserForm
+                    .form-fields
+                        .form__group
+                            label.form__label(for="name") Name
+                            input#name.form__input(type="text", name="name", placeholder="User's name")
+                        .form__group
+                            label.form__label(for="role") Role
+                            select#role.form__input(name="role")
+                                option(value="user") User
+                                option(value="guide") Guide
+                                option(value="lead-guide") Lead Guide
+                        .form__group.form__photo-upload
+                                img.form__user-photo(src=`img/users/default.jpg`)
+                                input.form__upload(type='file',name='photo',id='photo',accept='image/*')
+                                label(for='photo')  Choose new photo        
+                    .actions            
+                       button.btn.btn--green(type="submit",name='action',value='update') Update User
+                       button.btn.btn--delete(type='submit',name="action" ,value="delete") Delete User
+
