@@ -27,7 +27,7 @@ router
   .route('/manage-tours')
   .get(
     authController.protect,
-    authController.restrict('admin'),
+    authController.restrict('admin', 'lead-guide'),
     viewController.manageTours,
   );
 router
@@ -37,6 +37,12 @@ router
     authController.restrict('admin'),
     viewController.manageUsers,
   );
-// router.route('/manage-reviews').get(authController.protect,authController.restrict('admin'),viewController.manageReviews);
+router
+  .route('/manage-reviews')
+  .get(
+    authController.protect,
+    authController.restrict('admin'),
+    viewController.manageReviews,
+  );
 // router.route('/manage-bookings').get(authController.protect,authController.restrict('admin'),viewController.manageBookings);
 export default router;

@@ -9,6 +9,7 @@ import { createSession } from './checkout';
 import { showAlert } from './alerts';
 import { addTour, updateTour, deleteTour } from './manageTour';
 import { getUserInfo, deleteUser, updateUser } from './manageUser';
+import { getReviewInfo, updateReview, deleteReview } from './manageReview';
 //DOM ELEMENTS
 const mapBox = document.getElementById('map');
 const loginForm = document.querySelector('.form--login');
@@ -20,6 +21,7 @@ const signupForm = document.querySelector('.form--signUp');
 const manageTourForm = document.querySelector('.form_admin_input');
 const addLocations = document.getElementById('add-location');
 const manageUserForm = document.getElementById('manageUserForm');
+const manageReviewForm = document.getElementById('manageReviewForm');
 
 // DELEGATIONS
 if (mapBox) {
@@ -124,6 +126,9 @@ const formMode = (modeSelect, formFields, actions) => {
       //hide get User in manage user form
       const getUserInfoBtn = document.getElementById('getuserinfo');
       if (getUserInfoBtn) getUserInfoBtn.style.display = 'none';
+      //hide get Review in manage Review form
+      const getReviewInfoBtn = document.getElementById('getReviewinfo');
+      if (getReviewInfoBtn) getReviewInfoBtn.style.display = 'none';
     }
     //show the whole form in add / edit tour
     else {
@@ -159,6 +164,9 @@ const formMode = (modeSelect, formFields, actions) => {
       //show get User in manage User form
       const getUserInfoBtn = document.getElementById('getuserinfo');
       if (getUserInfoBtn) getUserInfoBtn.style.display = 'inline-block';
+      //show get Review in manage Review form
+      const getReviewInfoBtn = document.getElementById('getReviewinfo');
+      if (getReviewInfoBtn) getReviewInfoBtn.style.display = 'inline-block';
     }
   });
   modeSelect.dispatchEvent(new Event('change'));
@@ -285,14 +293,15 @@ if (manageUserForm) {
   const modeSelect = document.getElementById('formMode');
   const formFields = document.querySelector('.form-fields');
   const actions = document.querySelector('.actions');
-  var emailElement = document.getElementById('email');
+  const emailElement = document.getElementById('email');
+
   formMode(modeSelect, formFields, actions);
   //fetch user info when admin click get user
   const fetchUserForm = document.getElementById('fetchUserForm');
 
   fetchUserForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    let email = emailElement.value;
+    const email = emailElement.value;
     const res = await getUserInfo(email);
 
     if (res.status === 200) {
@@ -329,5 +338,52 @@ if (manageUserForm) {
 
       await updateUser(email, newform);
     } else await deleteUser(email);
+  });
+}
+if (manageReviewForm) {
+  //to show up form-fields and hide it if admin wants to delete
+  const formFields = document.querySelector('.form-fields');
+  const mode_select = document.getElementById('formMode');
+  const actions = document.querySelector('.actions');
+  formMode(mode_select, formFields, actions);
+  const getReviewInfoForm = document.getElementById('fetchReviewForm');
+  let userName;
+  let tourName;
+  //listen to get review data
+  getReviewInfoForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    userName = document.getElementById('username').value;
+    tourName = document.getElementById('tourname').value;
+    const res = await getReviewInfo(userName, tourName);
+    if (res.status === 200) {
+      // Populate the review text
+      document.getElementById('reviewText').value = res.data.doc.review;
+
+      // Populate the rating in the rateContainer
+      const rateContainer = document.getElementById('rating_section');
+      rateContainer.innerHTML = ''; // Clear any existing stars
+      let stars = 1;
+      while (stars <= 5) {
+        const starClass = stars > res.data.doc.rating ? 'inactive' : 'active';
+        const starHTML = `
+          <svg class="reviews__star reviews__star--${starClass}">
+            <use xlink:href="/img/icons.svg#icon-star"></use>
+          </svg>`;
+        rateContainer.innerHTML += starHTML;
+        stars++;
+      }
+    } else {
+      showAlert('error', 'Review not found!', 20);
+    }
+  });
+  //admin can only change review text not rate
+  manageReviewForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const clickedButton = document.activeElement; // The button that triggered the form submission
+    const action = clickedButton.value;
+    if (action == 'update') {
+      const reviewNewText = document.getElementById('reviewText').value;
+      await updateReview(userName, tourName, reviewNewText);
+    } else await deleteReview(userName, tourName);
   });
 }

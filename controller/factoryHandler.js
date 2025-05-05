@@ -15,12 +15,10 @@ export const deleteOne = (Model) =>
           .populate({
             path: 'user',
             select: 'name',
-            match: { name: req.params.userName },
           })
           .populate({
             path: 'tour',
             select: 'name',
-            match: { name: req.params.tourName },
           });
       } else if (Model === User)
         doc = await Model.findOneAndDelete({ email: req.params.email });
@@ -60,22 +58,26 @@ export const updateOne = (Model) =>
       });
     } else {
       if (Model === Review) {
-        updatedDocument = Model.findOneAndupdate(
-          {
-            'user.name': req.params.userName,
-            'tour.name': req.params.tourName,
-          },
+        const tour = await Tour.findOne({ name: req.params.tourName });
+        const user = await User.findOne({ name: req.params.userName });
+        if (!tour || !user)
+          return next(
+            new AppError(
+              `No Review found with that username and tour name !`,
+              404,
+            ),
+          );
+        console.log(req.body);
+        updatedDocument = await Model.findOneAndUpdate(
+          { tour: tour._id, user: user._id },
           req.body,
-          { runValidators: true, new: true },
+          {
+            runValidators: true,
+            new: true,
+          },
         )
-          .populate({
-            path: 'user',
-            // match: { name: req.params.userName },
-          })
-          .populate({
-            path: 'tour',
-            // match: { name: req.params.tourName },
-          });
+          .populate('user')
+          .populate('tour');
       } else if (Model === Tour) {
         updatedDocument = await Model.findOneAndUpdate(
           { name: req.params.name },
@@ -102,6 +104,7 @@ export const updateOne = (Model) =>
         new AppError(`${Model.modelName} isn't found to update.`, 404),
       );
     }
+    console.log(updatedDocument);
     res.status(200).json({
       status: 'success',
       updatedDocument,
@@ -115,14 +118,24 @@ export const getOne = (Model, populateOptions) =>
     else {
       //if searching with user email
       if (req.params.email) query = Model.findOne({ email: req.params.email });
-      //if searching about review with tour's name and user's email
-      else if (req.params.tourName && req.params.userEmail)
+      //if searching about review with tour's name and username
+      else if (req.params.tourName && req.params.userName) {
+        const tour = await Tour.findOne({ name: req.params.tourName });
+        const user = await User.findOne({ name: req.params.userName });
+        if (!tour || !user)
+          return next(
+            new AppError(
+              `No Review found with that username and tour name !`,
+              404,
+            ),
+          );
         query = Model.findOne({
-          'user.email': req.params.userEmail,
-          'tour.name': req.params.tourName,
+          user: user._id,
+          tour: tour._id,
         })
-          .populate('tour')
-          .populate('user');
+          .populate({ path: 'tour', select: 'name' })
+          .populate({ path: 'user', select: 'name' });
+      }
     }
 
     if (populateOptions) query = query.populate(populateOptions);

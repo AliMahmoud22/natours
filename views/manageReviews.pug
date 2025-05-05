@@ -1,0 +1,51 @@
+extends base 
+mixin navItem(link,icon,text,active)
+    li(class=`${active?'side-nav--active' : ''}`)
+        a(href=`${link}`)
+            svg
+                use(xlink:href=`/img/icons.svg#icon-${icon}`)
+            |#{text}
+block content 
+     main.main
+        .user-view
+            nav.user-view__menu
+                ul.side-nav
+                    +navItem('/me',settings,' Settings',false)
+                    +navItem('/my-tours',briefcase,' My bookings',false)
+                    +navItem('/my-reviews',star,' My reviews',false)
+                -if(user.role=='admin')
+                    .admin-nav
+                        h5.admin-nav__heading Admin
+                        ul.side-nav
+                            +navItem('/manage-tours',map,' Manage tours',false)
+                            +navItem('/manage-users',users,' Manage users',false)
+                            +navItem('/manage-reviews',star,' Manage reviews',true)
+                            +navItem('/manage-bookings',briefcase,'Manage Bookings ',false)
+            .admin_container
+                div.action-selector
+                    label.form__label(for='formMode') Select Action
+                    select#formMode(name='formMode')
+                        option(value='update') Edit Review
+                        option(value='delete') Delete Review
+                h2(style="margin: 9px;margin-left: 32rem;") Edit / Delete Review                
+                //- Form to get review with email and tour name
+                form#fetchReviewForm
+                    .form__group.ma-bt-md
+                        label.form__label(for="username")  User's Name
+                        input#username.form__input(type="text", name="username", placeholder="Enter user's name", required)
+                        label.form__label(for="tourName")  Tour Name
+                        input#tourname.form__input(type="tourName", name="tourName", placeholder="Enter tour's name", required)
+                    button#getReviewinfo.btn.btn--green(type="submit",style='margin-left: 40%') Get Review
+                form#manageReviewForm
+                    .form-fields
+                        .form__group
+                            label.form__label(for="review") Review
+                            textarea#reviewText(name='review', rows='4',placeholder="review's text",data-required='',  required='')
+                        .form__group
+                            label.form__label(for="rating") Rating 
+                            #rating_section
+                           
+                    .actions            
+                       button.btn.btn--green(type="submit",name='action',value='update') Update Review
+                       button.btn.btn--delete(type='submit',name="action" ,value="delete") Delete Review
+
