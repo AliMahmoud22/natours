@@ -83,3 +83,6 @@ export const manageUsers = (req, res, next) => {
 export const manageReviews = (req, res, next) => {
   res.status(200).render('manageReviews', { title: 'manage Review' });
 };
+export const manageBookings = (req, res, next) => {
+  res.status(200).render('manageBookings', { title: 'manage Booking' });
+};

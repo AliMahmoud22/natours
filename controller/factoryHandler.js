@@ -11,7 +11,19 @@ export const deleteOne = (Model) =>
       doc = await Model.findByIdAndDelete(req.params.id);
     } else {
       if (Model === Review) {
-        doc = await Model.findOneAndDelete()
+        const tour = await Tour.findOne({ name: req.params.tourName });
+        const user = await User.findOne({ name: req.params.userName });
+        if (!tour || !user)
+          return next(
+            new AppError(
+              `No ${Model.modelName} found with that username and tour name !`,
+              404,
+            ),
+          );
+        doc = await Model.findOneAndDelete({
+          user: user._id,
+          tour: tour._id,
+        })
           .populate({
             path: 'user',
             select: 'name',
@@ -67,7 +79,6 @@ export const updateOne = (Model) =>
               404,
             ),
           );
-        console.log(req.body);
         updatedDocument = await Model.findOneAndUpdate(
           { tour: tour._id, user: user._id },
           req.body,
@@ -104,7 +115,6 @@ export const updateOne = (Model) =>
         new AppError(`${Model.modelName} isn't found to update.`, 404),
       );
     }
-    console.log(updatedDocument);
     res.status(200).json({
       status: 'success',
       updatedDocument,
@@ -118,14 +128,14 @@ export const getOne = (Model, populateOptions) =>
     else {
       //if searching with user email
       if (req.params.email) query = Model.findOne({ email: req.params.email });
-      //if searching about review with tour's name and username
-      else if (req.params.tourName && req.params.userName) {
+      //if searching about review OR booking with tour's name and username
+      else if (Model === Review) {
         const tour = await Tour.findOne({ name: req.params.tourName });
         const user = await User.findOne({ name: req.params.userName });
         if (!tour || !user)
           return next(
             new AppError(
-              `No Review found with that username and tour name !`,
+              `No ${Model.modelName} found with that username and tour name !`,
               404,
             ),
           );
@@ -172,6 +182,8 @@ export const getAll = (Model) =>
       },
     });
   });
+
+//parse Json input in body
 const prepareData = (req) => {
   if (req.body.locations) {
     req.body.locations = JSON.parse(req.body.locations);

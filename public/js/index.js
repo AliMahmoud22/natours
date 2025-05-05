@@ -10,6 +10,11 @@ import { showAlert } from './alerts';
 import { addTour, updateTour, deleteTour } from './manageTour';
 import { getUserInfo, deleteUser, updateUser } from './manageUser';
 import { getReviewInfo, updateReview, deleteReview } from './manageReview';
+import {
+  getBookingsInfo,
+  updateBookings,
+  deleteBookings,
+} from './manageBooking';
 //DOM ELEMENTS
 const mapBox = document.getElementById('map');
 const loginForm = document.querySelector('.form--login');
@@ -22,6 +27,7 @@ const manageTourForm = document.querySelector('.form_admin_input');
 const addLocations = document.getElementById('add-location');
 const manageUserForm = document.getElementById('manageUserForm');
 const manageReviewForm = document.getElementById('manageReviewForm');
+const manageBookingForm = document.getElementById('manageBookingForm');
 
 // DELEGATIONS
 if (mapBox) {
@@ -129,6 +135,8 @@ const formMode = (modeSelect, formFields, actions) => {
       //hide get Review in manage Review form
       const getReviewInfoBtn = document.getElementById('getReviewinfo');
       if (getReviewInfoBtn) getReviewInfoBtn.style.display = 'none';
+      const getBookinginfo = document.getElementById('getBookinginfo');
+      if (getBookinginfo) getBookinginfo.style.display = 'none';
     }
     //show the whole form in add / edit tour
     else {
@@ -167,6 +175,8 @@ const formMode = (modeSelect, formFields, actions) => {
       //show get Review in manage Review form
       const getReviewInfoBtn = document.getElementById('getReviewinfo');
       if (getReviewInfoBtn) getReviewInfoBtn.style.display = 'inline-block';
+      const getBookinginfo = document.getElementById('getBookinginfo');
+      if (getBookinginfo) getBookinginfo.style.display = 'inline-block';
     }
   });
   modeSelect.dispatchEvent(new Event('change'));
@@ -385,5 +395,49 @@ if (manageReviewForm) {
       const reviewNewText = document.getElementById('reviewText').value;
       await updateReview(userName, tourName, reviewNewText);
     } else await deleteReview(userName, tourName);
+  });
+}
+
+if (manageBookingForm) {
+  //to show up form-fields and hide it if admin wants to delete
+  const formFields = document.querySelector('.form-fields');
+  const mode_select = document.getElementById('formMode');
+  const actions = document.querySelector('.actions');
+  formMode(mode_select, formFields, actions);
+
+  const getBookingInfoForm = document.getElementById('fetchBookingForm');
+  let userName;
+  let tourName;
+  let bookingId;
+  //listen to get review data
+  getBookingInfoForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    // userName = document.getElementById('username').value;
+    // tourName = document.getElementById('tourname').value;
+    bookingId = document.getElementById('bookingId').value;
+    const res = await getBookingsInfo(bookingId);
+    if (res.status === 200) {
+      // Populate the booking price
+      document.getElementById('BookingPrice').value = res.data.doc.price;
+
+      // Populate the rating in the rateContainer
+      document.getElementById('statu').value = res.data.doc.paid;
+    } else {
+      showAlert('error', 'Booking not found!');
+    }
+  });
+
+  //admin can  change Booking statu or price
+  manageBookingForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const clickedButton = document.activeElement; // The button that triggered the form submission
+    const action = clickedButton.value;
+    if (action == 'update') {
+      const price = document.getElementById('BookingPrice').value;
+      // const statu = document.getElementById('statu').value ? 'true' : 'false';
+      const statu = document.getElementById('statu').value;
+      console.log(price, statu);
+      await updateBookings(bookingId, { price, statu });
+    } else await deleteBookings(bookingId);
   });
 }
