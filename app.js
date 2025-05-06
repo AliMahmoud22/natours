@@ -48,19 +48,18 @@ const app = express();
 app.use(cors());
 app.options('*', cors());
 app.enable('trust proxy');
-// app.enable({ trustproxy: false });
 
 let isDbClientConnected = false;
 
 if (!isDbClientConnected) {
   await mongoose
-    .connect(process.env.LOCAL_DATABASE)
-    // .connect(
-    //   process.env.HOSTED_DATABASE.replace(
-    //     '<db_password>',
-    //     process.env.DB_PASSWORD,
-    //   ),
-    // )
+    // .connect(process.env.LOCAL_DATABASE)
+    .connect(
+      process.env.HOSTED_DATABASE.replace(
+        '<db_password>',
+        process.env.DB_PASSWORD,
+      ),
+    )
     .then(() => {
       isDbClientConnected = true; // Set the custom variable to true
       console.log('Database connected.');
