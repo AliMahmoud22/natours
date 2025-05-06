@@ -34,7 +34,7 @@ block content
                             label.form__label(for='email') Email address
                             input#email.form__input(type='email', value=`${user.email}`, required,name='email')
                         .form__group.form__photo-upload
-                            img.form__user-photo(src=`img/users/${user.photo}`, alt=`${user.name}`)
+                            img.form__user-photo(src=`${user.photo.startsWith('http') ? user.photo : '/img/users/' + user.photo}`, alt=`${user.name}`)
                             input.form__upload(type='file',name='photo',id='photo')
                             label(for='photo')  Choose new photo
                         .form__group.right

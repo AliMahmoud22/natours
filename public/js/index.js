@@ -262,6 +262,7 @@ if (manageTourForm) {
             if (key === 'guides') {
               guides = value.split(',');
             } else {
+              //update tour slag with the new name
               if (key === 'updatedName') {
                 finalForm.set('name', value);
                 finalForm.append('slug', value.replaceAll(' ', '-'));

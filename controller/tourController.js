@@ -4,7 +4,7 @@ import AppError from '../utils/AppError.js';
 import Tour from './../Model/tourModel.js';
 import catchAsync from './../utils/catchAsync.js';
 import * as factory from './factoryHandler.js';
-
+import { v2 as cloudinary } from 'cloudinary';
 //routing handeling
 
 export const getAllTours = factory.getAll(Tour);
@@ -137,32 +137,63 @@ export const uploadTourImage = upload.fields([
 export const resizeTourImage = catchAsync(async (req, res, next) => {
   if (req.files) {
     if (req.files.imageCover) {
-      //resize imageCover
-      // const imageCoverName = `tour-${req.params.id}-${Date.now()}-cover.jpeg`;
       const imageCoverName = `tour-${req.body.name}-${Date.now()}-cover.jpeg`;
-      await sharp(req.files.imageCover[0].buffer)
+      const buffer = await sharp(req.files.imageCover[0].buffer)
         .resize(2000, 1333)
         .toFormat('jpeg')
-        .jpeg(90)
-        .toFile(`public/img/tours/${imageCoverName}`);
-      req.body.imageCover = imageCoverName;
+        .jpeg({ quality: 80 })
+        .toBuffer();
+      // .toFile(`public/img/tours/${imageCoverName}`);
+      const result = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            folder: 'tours',
+            public_id: imageCoverName,
+            resource_type: 'image',
+          },
+          (error, result) => {
+            if (error) {
+              console.error('Cloudinary Upload Error:', error);
+              reject(new AppError('Failed to upload image to Cloudinary', 500));
+            } else resolve(result);
+          },
+        );
+        uploadStream.end(buffer);
+      });
+
+      // Save the Cloudinary URL to req.body.imageCover
+      req.body.imageCover = result.secure_url;
     }
     //resize images
     if (req.files.images) {
       req.body.images = [];
-      let imgName = '';
       await Promise.all(
         req.files.images.map(async (img, i) => {
-          imgName = `tour-${req.body.name}-${Date.now()}-${i + 1}.jpeg`;
-          req.body.images.push(imgName);
-          await sharp(img.buffer)
+          const imgName = `tour-${req.body.name}-${Date.now()}-${i + 1}.jpeg`;
+          const buffer = await sharp(img.buffer)
             .resize(2000, 1333)
             .toFormat('jpeg')
-            .jpeg(90)
-            .toFile(`public/img/tours/${imgName}`);
+            .jpeg({ quality: 80 })
+            .toBuffer();
+          const result = await new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+              { folder: 'tours', public_id: imgName, resource_type: 'image' },
+              (error, result) => {
+                if (error) {
+                  console.error('Cloudinary Upload Error:', error);
+                  reject(
+                    new AppError('Failed to upload image to Cloudinary', 500),
+                  );
+                } else resolve(result);
+              },
+            );
+            uploadStream.end(buffer);
+          });
+          req.body.images.push(result.secure_url);
         }),
       );
     }
+   
   }
   next();
 });

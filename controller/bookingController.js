@@ -11,6 +11,13 @@ export const checkout = catchAsync(async (req, res, next) => {
   const tour = await Tour.findById(req.params.tourId);
   if (!tour) return next(new AppError('there is no Tour with this ID!', 404));
 
+  let image;
+  //if photo stored in cloudinary
+  if (tour.imageCover.startsWith('http')) image = `${tour.imageCover}`;
+  //if photo stored locally
+  else
+    image = `${req.protocol}://${req.get('host')}/img/tours/${tour.imageCover}`;
+  console.log(image);
   const session = await stripe.checkout.sessions.create({
     client_reference_id: req.params.tourId,
     cancel_url: `${req.protocol}://${req.get('host')}/`,
@@ -42,7 +49,6 @@ export const checkout = catchAsync(async (req, res, next) => {
     session,
   });
 });
-
 
 //function to create booking in the DataBase
 const createBookingCheckout = catchAsync(async (session) => {

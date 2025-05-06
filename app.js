@@ -12,8 +12,9 @@ import compression from 'compression';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
-dotenv.config({ path: './config.env' });
 import Stripe from 'stripe';
+import { v2 as cloudinary } from 'cloudinary';
+dotenv.config({ path: './config.env' });
 
 import globalErrorHandler from './controller/globalErrorHandle.js';
 import AppError from './utils/AppError.js';
@@ -25,6 +26,12 @@ import bookingRoute from './Routes/bookingRoutes.js';
 import * as bookingController from './controller/bookingController.js';
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+// Configuration
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -47,13 +54,13 @@ let isDbClientConnected = false;
 
 if (!isDbClientConnected) {
   await mongoose
-    // .connect(process.env.LOCAL_DATABASE)
-    .connect(
-      process.env.HOSTED_DATABASE.replace(
-        '<db_password>',
-        process.env.DB_PASSWORD,
-      ),
-    )
+    .connect(process.env.LOCAL_DATABASE)
+    // .connect(
+    //   process.env.HOSTED_DATABASE.replace(
+    //     '<db_password>',
+    //     process.env.DB_PASSWORD,
+    //   ),
+    // )
     .then(() => {
       isDbClientConnected = true; // Set the custom variable to true
       console.log('Database connected.');
@@ -94,7 +101,7 @@ app.use(
       styleSrc: ["'self'", "'unsafe-inline'", ...styleSrcUrls],
       workerSrc: ["'self'", 'blob:'],
       objectSrc: [],
-      imgSrc: ["'self'", 'blob:', 'data:'],
+      imgSrc: ["'self'", 'blob:', 'data:','https://res.cloudinary.com'],
       fontSrc: ["'self'", ...fontSrcUrls],
       frameSrc: ['https://js.stripe.com'],
     },

@@ -4,6 +4,7 @@ import User from './../Model/userModel.js';
 import catchAsync from './../utils/catchAsync.js';
 import AppError from '../utils/AppError.js';
 import * as factory from './factoryHandler.js';
+import { v2 as cloudinary } from 'cloudinary';
 
 const filterBody = (body, ...filterBody) => {
   const filtered = {};
@@ -12,17 +13,6 @@ const filterBody = (body, ...filterBody) => {
   });
   return filtered;
 };
-// const multerStorage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     cb(null, 'public/img/users');
-//   },
-//   filename: (req, file, cb) => {
-//     cb(
-//       null,
-//       `user-${req.user.id}-${Date.now()}.${file.mimetype.split('/')[1]}`,
-//     );
-//   },
-// });
 const multerStorage = multer.memoryStorage();
 const multerFileFilter = (req, file, cb) => {
   if (file.mimetype.startsWith('image')) {
@@ -34,8 +24,9 @@ const upload = multer({ storage: multerStorage, fileFilter: multerFileFilter });
 
 export const uploadPhoto = upload.single('photo');
 export const resizeUserphoto = catchAsync(async (req, res, next) => {
-  console.log('inside resize file: ', req.file);
+  //check if there is image
   if (!req.file) return next();
+
   //logged in user wants to change photo
   if (req.user) {
     //admin wants to change user's photo
@@ -47,15 +38,32 @@ export const resizeUserphoto = catchAsync(async (req, res, next) => {
   }
   //user signin up with photo uploaded
   else {
-    console.log('inside resize body :', req.body);
     req.file.filename = `user-${req.body.email}-${Date.now()}.jpeg`;
   }
-  req.body.photo = req.file.filename;
-  await sharp(req.file.buffer)
+
+  const buffer = await sharp(req.file.buffer)
     .resize(500, 500)
     .toFormat('jpeg')
-    .jpeg(90)
-    .toFile(`public/img/users/${req.file.filename}`);
+    .jpeg({ quality: 80 })
+    .toBuffer();
+
+  // Upload the image to Cloudinary
+  const result = await new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { folder: 'users', public_id: req.file.filename, resource_type: 'image' },
+      (error, result) => {
+        if (error) {
+          console.error('Cloudinary Upload Error:', error);
+          reject(new AppError('Failed to upload image to Cloudinary', 500));
+        } else resolve(result);
+      },
+    );
+    uploadStream.end(buffer);
+  });
+
+  // Save the Cloudinary URL to req.body.photo
+  req.body.photo = result.secure_url;
+  // req.file.filename = result.secure_url;
   next();
 });
 export const updateMe = catchAsync(async (req, res, next) => {
@@ -63,8 +71,14 @@ export const updateMe = catchAsync(async (req, res, next) => {
   if (req.body.password || req.body.passwordConfirm)
     return next(new AppError('you cant update password from here.', 400));
   //2)filter the req.body
-  const filteredBody = filterBody(req.body, 'name', 'email');
-  if (req.file) filteredBody.photo = req.file.filename;
+
+  // const filteredBody = filterBody(req.body, 'name', 'email');
+  // console.log('update me filteredBody : ', filteredBody);
+  // if (req.file) filteredBody.photo = req.file.filename;
+  let filteredBody;
+  if (req.file) filteredBody = filterBody(req.body, 'name', 'email', 'photo');
+  else filteredBody = filterBody(req.body, 'name', 'email');
+
   //3) update user data
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
     new: true,
