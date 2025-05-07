@@ -11,8 +11,8 @@ import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { escape } from 'validator';
-
+import validator from 'validator';
+const { escape } = validator;
 app.use((req, res, next) => {
   if (req.body) {
     for (const key in req.body) {
