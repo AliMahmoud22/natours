@@ -1,6 +1,6 @@
+// app.js
 import express from 'express';
 import morgan from 'morgan';
-import mongoose from 'mongoose';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import helmet from 'helmet';
@@ -12,8 +12,6 @@ import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import connectToDatabase from './utils/database.js';
-import { v2 as cloudinary } from 'cloudinary';
 
 dotenv.config({ path: './config.env' });
 
@@ -26,63 +24,28 @@ import viewRoute from './Routes/viewRoutes.js';
 import bookingRoute from './Routes/bookingRoutes.js';
 import * as bookingController from './controller/bookingController.js';
 
-process.on('uncaughtException', (err) => {
-  console.log('unhandeled exception caught! \n Error 💥');
-  console.log(err);
-  console.log('shutting down...');
-  process.exit(1);
-});
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Configuration
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-(async () => {
-  try {
-    await connectToDatabase(); // Ensure the database connection is established
-    console.log('Database connected successfully.');
-
-    const port = process.env.PORT || 4000;
-    const server = app.listen(port, () => {
-      console.log(`Listening on port ${port}.........`);
-    });
-
-    process.on('unhandledRejection', async (err) => {
-      console.log(err.name, '\n', err.message);
-      console.log('Shutting down...');
-      await mongoose.connection.close();
-      server.close(() => {
-        process.exit(1);
-      });
-    });
-  } catch (error) {
-    console.error('Failed to connect to the database:', error);
-    process.exit(1); // Exit the process if the database connection fails
-  }
-})();
-
 const app = express();
-//to allow other sites to use APIs
+
+// Allow APIs from specific origins
 app.use(
   cors({
     origin: [
-      /^https:\/\/checkout\.stripe\.com$/, // Allow Stripe
-      /^https:\/\/res\.cloudinary\.com$/, // Allow Cloudinary
+      /^https:\/\/checkout\.stripe\.com$/,
+      /^https:\/\/res\.cloudinary\.com$/,
     ],
   }),
 );
 
 app.enable('trust proxy');
 
+// Set Pug as template engine
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 
+// CSP config
 const scriptSrcUrls = [
   'https://api.tiles.mapbox.com/',
   'https://api.mapbox.com/',
@@ -103,7 +66,7 @@ const connectSrcUrls = [
   'https://checkout.stripe.com',
 ];
 const fontSrcUrls = ['fonts.googleapis.com', 'fonts.gstatic.com'];
-// Global Middleware
+
 app.use(
   helmet.contentSecurityPolicy({
     directives: {
@@ -119,32 +82,33 @@ app.use(
     },
   }),
 );
-//logger
+
+// Logger
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
+// Rate limiter
 const limiter = ratelimit({
   max: 100,
-  windowMs: 60 * 60 * 1000, //an hour
-  message: 'too many requests. please try again later',
+  windowMs: 60 * 60 * 1000,
+  message: 'Too many requests, please try again later',
 });
 app.use('/api', limiter);
 
+// Stripe webhook
 app.post(
   '/webhook-checkout',
   express.raw({ type: 'application/json' }),
   bookingController.webhookCheckout,
 );
 
-app.use(
-  express.json({
-    limit: '10kb',
-  }),
-);
+// Body parsers
+app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
 
+// Data sanitization
 app.use(mongoSanitize());
 app.use(xss());
 app.use(
@@ -160,19 +124,23 @@ app.use(
   }),
 );
 
+// Static files & compression
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(compression());
 
+// Routes
 app.use('/', viewRoute);
 app.use('/api/v1/users', userRoute);
 app.use('/api/v1/tours', tourRoute);
 app.use('/api/v1/reviews', reviewRoute);
 app.use('/api/v1/bookings', bookingRoute);
 
+// 404 handler
 app.all('*', (req, res, next) => {
-  next(new AppError(`cant find ${req.originalUrl} on the server!`, 404));
+  next(new AppError(`Can't find ${req.originalUrl} on the server!`, 404));
 });
 
+// Global error handler
 app.use(globalErrorHandler);
 
 export default app;
