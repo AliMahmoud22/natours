@@ -6,13 +6,23 @@ import path from 'path';
 import helmet from 'helmet';
 import ratelimit from 'express-rate-limit';
 import mongoSanitize from 'express-mongo-sanitize';
-import xss from 'xss-clean';
 import hpp from 'hpp';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { escape } from 'validator';
 
+app.use((req, res, next) => {
+  if (req.body) {
+    for (const key in req.body) {
+      if (typeof req.body[key] === 'string') {
+        req.body[key] = escape(req.body[key]); // Escape special characters
+      }
+    }
+  }
+  next();
+});
 dotenv.config({ path: './config.env' });
 
 import globalErrorHandler from './controller/globalErrorHandle.js';
@@ -39,7 +49,7 @@ app.use(
   }),
 );
 
-app.enable('trust proxy');
+app.set('trust proxy', 1); // Trust only the first proxy (Vercel's)
 
 // Set Pug as template engine
 app.set('view engine', 'pug');
@@ -110,7 +120,6 @@ app.use(cookieParser());
 
 // Data sanitization
 app.use(mongoSanitize());
-app.use(xss());
 app.use(
   hpp({
     whitelist: [
