@@ -12,17 +12,7 @@ import compression from 'compression';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import validator from 'validator';
-const { escape } = validator;
-app.use((req, res, next) => {
-  if (req.body) {
-    for (const key in req.body) {
-      if (typeof req.body[key] === 'string') {
-        req.body[key] = escape(req.body[key]); // Escape special characters
-      }
-    }
-  }
-  next();
-});
+
 dotenv.config({ path: './config.env' });
 
 import globalErrorHandler from './controller/globalErrorHandle.js';
@@ -38,7 +28,17 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-
+const { escape } = validator;
+app.use((req, res, next) => {
+  if (req.body) {
+    for (const key in req.body) {
+      if (typeof req.body[key] === 'string') {
+        req.body[key] = escape(req.body[key]); // Escape special characters
+      }
+    }
+  }
+  next();
+});
 // Allow APIs from specific origins
 app.use(
   cors({
