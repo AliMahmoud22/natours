@@ -1,6 +1,6 @@
 import express from 'express';
 import morgan from 'morgan';
-// import mongoose from 'mongoose';
+import mongoose from 'mongoose';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import helmet from 'helmet';
@@ -11,12 +11,12 @@ import hpp from 'hpp';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import cors from 'cors';
-// import dotenv from 'dotenv';
-// import connectToDatabase from './utils/database.js';
+import dotenv from 'dotenv';
+import connectToDatabase from './utils/database.js';
 // import Stripe from 'stripe';
-// import { v2 as cloudinary } from 'cloudinary';
+import { v2 as cloudinary } from 'cloudinary';
 
-// dotenv.config({ path: './config.env' });
+dotenv.config({ path: './config.env' });
 
 import globalErrorHandler from './controller/globalErrorHandle.js';
 import AppError from './utils/AppError.js';
@@ -26,25 +26,49 @@ import reviewRoute from './Routes/reviewRoutes.js';
 import viewRoute from './Routes/viewRoutes.js';
 import bookingRoute from './Routes/bookingRoutes.js';
 import * as bookingController from './controller/bookingController.js';
+
+process.on('uncaughtException', (err) => {
+  console.log('unhandeled exception caught! \n Error 💥');
+  console.log(err);
+  console.log('shutting down...');
+  process.exit(1);
+});
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+//set up
 // export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
 // Configuration
-// cloudinary.config({
-//   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-//   api_key: process.env.CLOUDINARY_API_KEY,
-//   api_secret: process.env.CLOUDINARY_API_SECRET,
-// });
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
+(async () => {
+  try {
+    await connectToDatabase(); // Ensure the database connection is established
+    console.log('Database connected successfully.');
 
-// process.on('uncaughtException', (err) => {
-//   console.log('unhandeled exception caught! \n Error 💥');
-//   console.log(err);
-//   console.log('shutting down...');
-//   process.exit(1);
-// });
+    const port = process.env.PORT || 4000;
+    const server = app.listen(port, () => {
+      console.log(`Listening on port ${port}.........`);
+    });
+
+    process.on('unhandledRejection', async (err) => {
+      console.log(err.name, '\n', err.message);
+      console.log('Shutting down...');
+      await mongoose.connection.close();
+      server.close(() => {
+        process.exit(1);
+      });
+    });
+  } catch (error) {
+    console.error('Failed to connect to the database:', error);
+    process.exit(1); // Exit the process if the database connection fails
+  }
+})();
 
 const app = express();
 //to allow other sites to use APIs

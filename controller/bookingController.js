@@ -7,7 +7,7 @@ import * as factoryHandler from './factoryHandler.js';
 import Stripe from 'stripe';
 
 // import { stripe } from '../app.js';
- const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export const checkout = catchAsync(async (req, res, next) => {
   const tour = await Tour.findById(req.params.tourId);
@@ -19,7 +19,7 @@ export const checkout = catchAsync(async (req, res, next) => {
   //if photo stored locally
   else
     image = `${req.protocol}://${req.get('host')}/img/tours/${tour.imageCover}`;
-  console.log(image);
+
   const session = await stripe.checkout.sessions.create({
     client_reference_id: req.params.tourId,
     cancel_url: `${req.protocol}://${req.get('host')}/`,
@@ -35,9 +35,7 @@ export const checkout = catchAsync(async (req, res, next) => {
           product_data: {
             name: tour.name,
             description: tour.summary,
-            images: [
-              `${req.protocol}://${req.get('host')}/img/tours/${tour.imageCover}`,
-            ],
+            images: [image],
           },
         },
 
