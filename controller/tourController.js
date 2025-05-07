@@ -146,7 +146,6 @@ export const resizeTourImage = catchAsync(async (req, res, next) => {
         .toFormat('jpeg')
         .jpeg({ quality: 80 })
         .toBuffer();
-      // .toFile(`public/img/tours/${imageCoverName}`);
       const result = await new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           {

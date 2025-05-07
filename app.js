@@ -13,7 +13,6 @@ import compression from 'compression';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import connectToDatabase from './utils/database.js';
-// import Stripe from 'stripe';
 import { v2 as cloudinary } from 'cloudinary';
 
 dotenv.config({ path: './config.env' });
@@ -36,8 +35,6 @@ process.on('uncaughtException', (err) => {
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-//set up
-// export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Configuration
 cloudinary.config({
@@ -82,15 +79,6 @@ app.use(
 );
 
 app.enable('trust proxy');
-
-// (async () => {
-//   try {
-//     await connectToDatabase(); // Connect to the database
-//     console.log('Database connected successfully.');
-//   } catch (error) {
-//     console.error('Failed to connect to the database:', error);
-//   }
-// })();
 
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
@@ -186,18 +174,5 @@ app.all('*', (req, res, next) => {
 });
 
 app.use(globalErrorHandler);
-
-// const port = process.env.PORT || 4000;
-// const server = app.listen(port, () => {
-//   console.log(`listening on port ${port}.........`);
-// });
-// process.on('unhandledRejection', async (err) => {
-//   console.log(err.name, '\n', err.message);
-//   console.log('shutting down...');
-//   await mongoose.connection.close();
-//   server.close(() => {
-//     process.exit(1);
-//   });
-// });
 
 export default app;

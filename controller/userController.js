@@ -63,7 +63,6 @@ export const resizeUserphoto = catchAsync(async (req, res, next) => {
 
   // Save the Cloudinary URL to req.body.photo
   req.body.photo = result.secure_url;
-  // req.file.filename = result.secure_url;
   next();
 });
 export const updateMe = catchAsync(async (req, res, next) => {
@@ -72,9 +71,6 @@ export const updateMe = catchAsync(async (req, res, next) => {
     return next(new AppError('you cant update password from here.', 400));
   //2)filter the req.body
 
-  // const filteredBody = filterBody(req.body, 'name', 'email');
-  // console.log('update me filteredBody : ', filteredBody);
-  // if (req.file) filteredBody.photo = req.file.filename;
   let filteredBody;
   if (req.file) filteredBody = filterBody(req.body, 'name', 'email', 'photo');
   else filteredBody = filterBody(req.body, 'name', 'email');

@@ -6,7 +6,6 @@ import Booking from '../Model/bookingModel.js';
 import * as factoryHandler from './factoryHandler.js';
 import Stripe from 'stripe';
 
-// import { stripe } from '../app.js';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export const checkout = catchAsync(async (req, res, next) => {

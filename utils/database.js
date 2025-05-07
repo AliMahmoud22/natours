@@ -14,9 +14,7 @@ async function connectToDatabase() {
   }
 
   try {
-    const db = await mongoose.connect(process.env.MONGODB_URI, {
-      maxPoolSize: 10, // Use connection pooling
-    });
+    const db = await mongoose.connect(process.env.MONGODB_URI);
     cachedDb = db; // Cache the connection
     console.log('New database connection established.');
     return db;
