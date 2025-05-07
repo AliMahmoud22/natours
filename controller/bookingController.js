@@ -4,8 +4,10 @@ import Tour from '../Model/tourModel.js';
 import User from '../Model/userModel.js';
 import Booking from '../Model/bookingModel.js';
 import * as factoryHandler from './factoryHandler.js';
+import Stripe from 'stripe';
 
-import { stripe } from '../app.js';
+// import { stripe } from '../app.js';
+ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export const checkout = catchAsync(async (req, res, next) => {
   const tour = await Tour.findById(req.params.tourId);

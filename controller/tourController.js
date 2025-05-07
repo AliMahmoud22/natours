@@ -5,8 +5,11 @@ import Tour from './../Model/tourModel.js';
 import catchAsync from './../utils/catchAsync.js';
 import * as factory from './factoryHandler.js';
 import { v2 as cloudinary } from 'cloudinary';
-//routing handeling
 
+
+
+
+//routing handeling
 export const getAllTours = factory.getAll(Tour);
 export const getTour = factory.getOne(Tour, { path: 'reviews' });
 export const createTour = factory.createOne(Tour);
