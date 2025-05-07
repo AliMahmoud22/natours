@@ -26,7 +26,8 @@ import reviewRoute from './Routes/reviewRoutes.js';
 import viewRoute from './Routes/viewRoutes.js';
 import bookingRoute from './Routes/bookingRoutes.js';
 import * as bookingController from './controller/bookingController.js';
-
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 // export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 // Configuration
 // cloudinary.config({
