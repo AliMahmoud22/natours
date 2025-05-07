@@ -23,19 +23,19 @@ cloudinary.config({
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
+let server;
 (async () => {
   try {
     await connectToDatabase(); // Connect to the database
     console.log('Database connected successfully.');
+    const port = process.env.PORT || 4000;
+    server = app.listen(port, () => {
+      console.log(`listening on port ${port}.........`);
+    });
   } catch (error) {
     console.error('Failed to connect to the database:', error);
   }
 })();
-const port = process.env.PORT || 4000;
-const server = app.listen(port, () => {
-  console.log(`listening on port ${port}.........`);
-});
 
 process.on('unhandledRejection', async (err) => {
   console.log(err.name, '\n', err.message);
