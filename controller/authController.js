@@ -186,16 +186,20 @@ export const restrict = (...roles) => {
 };
 
 export const forgotPassword = catchAsync(async (req, res, next) => {
-  //1) check the email sent in req
-  const user = await User.findOne({ email: req.body.email });
+  //check if email sent in body
+  const { email } = req.body;
+  if (!email) return next(new AppError('please enter your Email!', 404));
+
+  //2) check the email sent in req
+  const user = await User.findOne({ email });
   if (!user) {
     return next(new AppError(`this email isn't found`, 404));
   }
-  //2) get restToken
+  //3) get restToken
   const resetToken = user.createForgotPasswordToken();
   await user.save({ validateBeforeSave: false });
 
-  //3 send the token to user email
+  //4) send the token to user email
   try {
     const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
 
@@ -234,7 +238,7 @@ export const resetPassword = catchAsync(async (req, res, next) => {
   user.passwordResetTokenExpire = undefined;
 
   await user.save();
-  createSendToken(user, 200, 'password is changed successfuly', req, res);
+  createSendToken(user, 200, 'password is changed successfully', req, res);
 });
 
 export const updatePassword = catchAsync(async (req, res, next) => {
@@ -253,7 +257,7 @@ export const updatePassword = catchAsync(async (req, res, next) => {
   currentUser.password = req.body.newPassword;
   currentUser.passwordConfirm = req.body.newPasswordConfirm;
   await currentUser.save();
-  createSendToken(currentUser, 200, 'password changed, logged in', req, res);
+  createSendToken(currentUser, 200, 'password changed.', req, res);
 });
 
 //to render elements only if logged in (such as logout and account) otherwise render another elements(such as login and sign up)

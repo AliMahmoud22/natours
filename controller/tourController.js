@@ -152,7 +152,7 @@ export const resizeTourImage = catchAsync(async (req, res, next) => {
             folder: 'tours',
             public_id: imageCoverName,
             resource_type: 'image',
-          },
+          },    
           (error, result) => {
             if (error) {
               console.error('Cloudinary Upload Error:', error);
