@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import slugify from 'slugify';
-
+import AppError from '../utils/AppError.js';
 const TourSchema = new mongoose.Schema(
   {
     name: {
@@ -14,15 +14,7 @@ const TourSchema = new mongoose.Schema(
     },
     price: { type: Number, required: [true, 'A tour must have a price'] },
 
-    discount: {
-      type: Number,
-      validate: {
-        validator: function (val) {
-          return val < this.price;
-        },
-        message: `discount ({VALUE})must be lower than price.`,
-      },
-    },
+    discount: Number,
 
     duration: {
       type: Number,
@@ -111,6 +103,7 @@ const TourSchema = new mongoose.Schema(
 TourSchema.index({ price: 1, ratingsAverage: -1 });
 TourSchema.index({ slug: 1 });
 TourSchema.index({ startLocation: '2dsphere' });
+
 TourSchema.virtual('Duration in weeks').get(function () {
   return this.duration / 7;
 });
@@ -126,6 +119,37 @@ TourSchema.pre('save', function (next) {
   next();
 });
 
+TourSchema.pre('save', function (next) {
+  if (this.discount && this.discount >= this.price) {
+    return next(
+      new AppError('Discount must be less than the actual price.', 400),
+    );
+  }
+  next();
+});
+TourSchema.pre(/^findOneAndUpdate|updateOne$/, async function (next) {
+  const update = this.getUpdate();
+  const { discount } = update;
+  let { price } = update;
+
+  if (discount !== undefined) {
+    let actualPrice = price;
+    // If price isn't included in the update, fetch it from the DB
+    if (price === undefined) {
+      const doc = await this.model.findOne(this.getQuery());
+      if (!doc) return next(new AppError('Tour not found.', 404));
+      actualPrice = doc.price;
+    }
+
+    if (discount >= actualPrice) {
+      return next(
+        new AppError('Discount must be less than the actual price.', 400),
+      );
+    }
+  }
+
+  next();
+});
 //query middleware
 TourSchema.pre(/^find/, function (next) {
   this.find({ secretTour: { $ne: true } });
